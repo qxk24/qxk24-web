@@ -1,43 +1,49 @@
 /**
  * ============================================================
- * QIUBBX MANAGEMENT SYSTEM
+ * QXK24.COM — Root Layout
  * ============================================================
- * Module      : Root Layout
- * Platform    : Web (Next.js)
+ * Module      : Layout
  * QXK24       : Kernel v1.7.0
  * Founder     : Masa Bayu
- * Created     : 2026-05-28
- * ============================================================
- * CONSTITUTIONAL DECLARATION:
- * This module operates under the Alamtologi Constitutional
- * Framework. All actions are governed by QXK24. Knowledge
- * belongs to no human. It flows like water to all.
+ * Created     : 2026-05-27
  * ============================================================
  */
 
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import './globals.css';
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-});
+import Link from 'next/link';
+import '../styles/globals.css';
 
 export const metadata: Metadata = {
-  title:       'QXK24 — Constitutional Kernel',
-  description: 'Alamtologi Constitutional Framework by Masa Bayu',
-  robots:      'noindex, nofollow',
+  title: 'QXK24 — Alamtologi Journals',
+  description: 'Constitutional knowledge journals analysed by Masa Bayu',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="bg-white text-gray-900 antialiased min-h-screen">
+    <html lang="en">
+      <body>
+        <nav className="border-b border-gray-100 sticky top-0 bg-white z-50">
+          <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
+            <Link
+              href="/"
+              className="font-bold text-gray-900 hover:text-amber-500 transition-colors text-lg tracking-tight"
+            >
+              QXK24
+            </Link>
+
+            <div className="flex items-center gap-6 text-sm text-gray-500">
+              <Link href="/journals" className="hover:text-gray-900 transition-colors">
+                Journals
+              </Link>
+              <Link href="/journals/submit" className="hover:text-gray-900 transition-colors">
+                Submit
+              </Link>
+              <Link href="/leaderboard" className="hover:text-gray-900 transition-colors">
+                Leaderboard
+              </Link>
+            </div>
+          </div>
+        </nav>
         {children}
       </body>
     </html>
