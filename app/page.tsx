@@ -183,15 +183,28 @@ export default function HomePage() {
       </section>
 
       <footer className="border-t border-gray-100">
-        <div className="max-w-3xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            <span className="font-bold text-gray-900">QXK24</span>
-            <span className="text-gray-400 text-sm ml-3">Constitutional Digital Kernel</span>
+        <div className="max-w-3xl mx-auto px-6 py-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+            <div className="flex items-center gap-3">
+              <span className="font-bold text-gray-900 text-lg">QXK24</span>
+              <span className="text-gray-300">|</span>
+              <span className="text-gray-400 text-sm">Constitutional Digital Kernel</span>
+            </div>
+            <p className="text-xs text-gray-400">© 2026 Masa Bayu · Apache 2.0</p>
           </div>
-          <div className="flex items-center gap-6 text-sm text-gray-400">
-            <Link href="/journals" className="hover:text-gray-700 transition-colors">Journals</Link>
-            <Link href="/journals/submit" className="hover:text-gray-700 transition-colors">Submit</Link>
-            <Link href="/leaderboard" className="hover:text-gray-700 transition-colors">Leaderboard</Link>
+
+          <div className="h-px bg-gray-100 mb-6" />
+
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-3 text-sm text-gray-400">
+            <Link href="/journals" className="hover:text-gray-700 transition-colors">
+              Journals
+            </Link>
+            <Link href="/journals/submit" className="hover:text-gray-700 transition-colors">
+              Submit
+            </Link>
+            <Link href="/leaderboard" className="hover:text-gray-700 transition-colors">
+              Leaderboard
+            </Link>
             <a
               href="https://github.com/qxk24"
               target="_blank"
@@ -200,8 +213,15 @@ export default function HomePage() {
             >
               GitHub
             </a>
+            <a
+              href="https://www.npmjs.com/package/@qxk24/sdk"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-gray-700 transition-colors"
+            >
+              npm
+            </a>
           </div>
-          <p className="text-xs text-gray-400">© 2026 Masa Bayu · Apache 2.0</p>
         </div>
       </footer>
     </main>
