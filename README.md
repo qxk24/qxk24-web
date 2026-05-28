@@ -39,3 +39,4 @@ npm start
 ```
 
 Point `qxk24.com` DNS to your host (Vercel, VPS, etc.) and set `NEXT_PUBLIC_API_URL`.
+
