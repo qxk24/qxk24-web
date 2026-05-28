@@ -135,50 +135,38 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-5 rounded-2xl bg-gray-900 text-white">
+          <a
+            href="https://www.npmjs.com/package/@qxk24/sdk"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block p-5 rounded-2xl bg-gray-900 text-white hover:bg-gray-800 transition-colors"
+          >
             <div className="text-xs text-gray-400 mb-3 font-mono">JavaScript / TypeScript</div>
             <code className="text-amber-400 text-sm font-mono">npm install @qxk24/sdk</code>
-            <div className="mt-3">
-              <a
-                href="https://www.npmjs.com/package/@qxk24/sdk"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-gray-400 hover:text-white transition-colors"
-              >
-                npmjs.com/package/@qxk24/sdk →
-              </a>
-            </div>
-          </div>
+            <div className="mt-3 text-xs text-gray-400">npmjs.com/package/@qxk24/sdk →</div>
+          </a>
 
-          <div className="p-5 rounded-2xl bg-gray-900 text-white">
+          <a
+            href="https://github.com/qxk24/qxk24-ios"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block p-5 rounded-2xl bg-gray-900 text-white hover:bg-gray-800 transition-colors"
+          >
             <div className="text-xs text-gray-400 mb-3 font-mono">iOS / Swift (SPM)</div>
             <code className="text-amber-400 text-sm font-mono break-all">github.com/qxk24/qxk24-ios</code>
-            <div className="mt-3">
-              <a
-                href="https://github.com/qxk24/qxk24-ios"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-gray-400 hover:text-white transition-colors"
-              >
-                Version 1.0.0 →
-              </a>
-            </div>
-          </div>
+            <div className="mt-3 text-xs text-gray-400">Version 1.0.0 →</div>
+          </a>
 
-          <div className="p-5 rounded-2xl bg-gray-900 text-white">
+          <a
+            href="https://github.com/qxk24/qxk24-android"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block p-5 rounded-2xl bg-gray-900 text-white hover:bg-gray-800 transition-colors"
+          >
             <div className="text-xs text-gray-400 mb-3 font-mono">Android / Kotlin</div>
             <code className="text-amber-400 text-sm font-mono break-all">github.com/qxk24/qxk24-android</code>
-            <div className="mt-3">
-              <a
-                href="https://github.com/qxk24/qxk24-android"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-gray-400 hover:text-white transition-colors"
-              >
-                Version 1.0.0 →
-              </a>
-            </div>
-          </div>
+            <div className="mt-3 text-xs text-gray-400">Version 1.0.0 →</div>
+          </a>
         </div>
       </section>
 
