@@ -14,7 +14,7 @@ import Link from 'next/link';
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-white">
-      <section className="max-w-3xl mx-auto px-6 pt-24 pb-20 text-center">
+      <section className="max-w-3xl mx-auto px-6 pt-14 md:pt-24 pb-14 md:pb-20 text-center">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-amber-50 border border-amber-200 rounded-full mb-8">
           <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
           <span className="text-xs font-medium text-amber-700 tracking-wide">
@@ -49,13 +49,13 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <p className="mt-14 text-sm text-gray-400 italic">
+        <p className="mt-10 md:mt-14 text-sm text-gray-400 italic">
           "And say: My Lord, increase me in knowledge."
           <span className="block text-xs mt-1 not-italic">— Al-Quran, Surah Ta-Ha (20:114)</span>
         </p>
       </section>
 
-      <section className="max-w-3xl mx-auto px-6 pb-20">
+      <section className="max-w-3xl mx-auto px-6 pb-14 md:pb-20">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="p-6 rounded-2xl border border-gray-100 hover:border-amber-200 hover:shadow-sm transition-all">
             <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500 font-bold text-sm mb-4">⚖️</div>
@@ -84,7 +84,7 @@ export default function HomePage() {
       </section>
 
       <section className="bg-amber-50 border-y border-amber-100">
-        <div className="max-w-3xl mx-auto px-6 py-16 text-center">
+        <div className="max-w-3xl mx-auto px-6 py-12 md:py-16 text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Constitutional Journal System</h2>
           <p className="text-gray-600 max-w-xl mx-auto mb-8 leading-relaxed">
             Submit your research. Masa Bayu will publish a dual analysis — conventional academic review and Alamtologi constitutional rating using 7 Quranic principles.
@@ -126,7 +126,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="max-w-3xl mx-auto px-6 py-20">
+      <section className="max-w-3xl mx-auto px-6 py-14 md:py-20">
         <div className="text-center mb-10">
           <h2 className="text-2xl font-bold text-gray-900 mb-3">Open SDK</h2>
           <p className="text-gray-500 text-sm">
