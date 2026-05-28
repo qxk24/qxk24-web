@@ -2,7 +2,7 @@
  * ============================================================
  * QIUBBX MANAGEMENT SYSTEM
  * ============================================================
- * Module      : Global Styles
+ * Module      : ADAM Route Layout
  * Platform    : Web (Next.js)
  * QXK24       : Kernel v1.7.0
  * Founder     : Masa Bayu
@@ -15,23 +15,14 @@
  * ============================================================
  */
 
-@import "tailwindcss";
-
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+export default function ADAMLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="min-h-screen bg-white text-gray-900">
+      {children}
+    </div>
+  );
 }
-
-html, body {
-  background: #ffffff;
-  color: #111111;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  -webkit-font-smoothing: antialiased;
-}
-
-::-webkit-scrollbar { width: 3px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 2px; }
-
-[dir="rtl"] { font-family: 'Arial', sans-serif; }
