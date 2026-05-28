@@ -48,8 +48,7 @@ export default async function JournalPage({
         <PageNav
           className="mb-6"
           items={[
-            { href: '/journals', label: 'Back to Journals', icon: '←' },
-            { href: '/', label: 'Home', icon: '🏠' },
+            { href: '/journals', label: 'Back to Journals' },
           ]}
         />
         <header className="mb-10">

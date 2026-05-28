@@ -26,12 +26,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
             <Link
               href="/"
-              className="font-bold text-gray-900 hover:text-amber-500 transition-colors text-lg"
+              className="font-bold text-gray-900 hover:text-amber-500 transition-colors text-lg tracking-tight"
             >
               QXK24
             </Link>
 
-            <div className="flex items-center gap-6 text-sm text-gray-600">
+            <div className="flex items-center gap-6 text-sm text-gray-500">
               <Link href="/journals" className="hover:text-gray-900 transition-colors">
                 Journals
               </Link>

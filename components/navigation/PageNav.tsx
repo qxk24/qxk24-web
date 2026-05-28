@@ -3,7 +3,6 @@ import Link from 'next/link';
 interface PageNavItem {
   href: string;
   label: string;
-  icon: string;
 }
 
 interface PageNavProps {
@@ -18,9 +17,8 @@ export function PageNav({ items, className = '' }: PageNavProps) {
         <Link
           key={`${item.href}-${item.label}`}
           href={item.href}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-amber-200 bg-amber-50 text-amber-800 text-sm font-medium hover:bg-amber-100 transition-colors"
+          className="inline-flex items-center px-4 py-2 rounded-full border border-gray-200 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 hover:text-gray-900 transition-colors"
         >
-          <span aria-hidden="true">{item.icon}</span>
           <span>{item.label}</span>
         </Link>
       ))}

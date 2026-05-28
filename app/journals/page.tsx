@@ -7,7 +7,6 @@
 import Link from 'next/link';
 import { JournalAPI } from '@/lib/api';
 import { JournalCard } from '@/components/journal/JournalCard';
-import { PageNav } from '@/components/navigation/PageNav';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -39,12 +38,6 @@ export default async function JournalsPage({
 
   return (
     <main className="max-w-4xl mx-auto px-6 py-16">
-      <PageNav
-        className="mb-6"
-        items={[
-          { href: '/', label: 'Home', icon: '🏠' },
-        ]}
-      />
       <div className="flex items-start justify-between gap-4 mb-10">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Journals</h1>

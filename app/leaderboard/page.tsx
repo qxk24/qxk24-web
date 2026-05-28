@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { JournalAPI } from '@/lib/api';
 import { StarRating } from '@/components/journal/StarRating';
-import { PageNav } from '@/components/navigation/PageNav';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -21,19 +20,29 @@ export default async function LeaderboardPage() {
   return (
     <main className="min-h-screen bg-white">
       <div className="max-w-3xl mx-auto px-6 py-16">
-        <PageNav
-          className="mb-6"
-          items={[
-            { href: '/', label: 'Home', icon: '🏠' },
-          ]}
-        />
         <header className="mb-10">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Journal Leaderboard</h1>
           <p className="text-gray-500">
             Ranked by QXK24 Constitutional Score — Alamtologi (60%), conventional (25%), reactions (15%).
           </p>
-          <div className="mt-5 p-4 bg-amber-50 rounded-2xl border border-amber-100 text-sm text-amber-700 font-mono">
-            (Alamtologi ÷ 5 × 60) + (Conventional ÷ 5 × 25) + (min(Reactions ÷ 100, 1) × 15)
+          <div className="mt-5 p-4 bg-amber-50 rounded-2xl border border-amber-100">
+            <p className="text-xs font-semibold text-amber-700 mb-2 uppercase tracking-widest">
+              Score Formula
+            </p>
+            <div className="flex flex-wrap items-center gap-2 text-sm text-amber-800">
+              <span className="bg-amber-100 px-2 py-1 rounded-lg font-mono text-xs">
+                Alamtologi ÷ 5 × 60
+              </span>
+              <span className="text-amber-400">+</span>
+              <span className="bg-amber-100 px-2 py-1 rounded-lg font-mono text-xs">
+                Conventional ÷ 5 × 25
+              </span>
+              <span className="text-amber-400">+</span>
+              <span className="bg-amber-100 px-2 py-1 rounded-lg font-mono text-xs">
+                Reactions ÷ 100 × 15
+              </span>
+              <span className="text-amber-600 font-semibold">= Score / 100</span>
+            </div>
           </div>
         </header>
 

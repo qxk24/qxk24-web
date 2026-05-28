@@ -98,8 +98,7 @@ export default function SubmitJournalPage() {
           <PageNav
             className="mb-6 justify-center"
             items={[
-              { href: '/journals', label: 'Back to Journals', icon: '←' },
-              { href: '/', label: 'Home', icon: '🏠' },
+              { href: '/journals', label: 'Back to Journals' },
             ]}
           />
           <div className="text-5xl mb-4">✅</div>
@@ -119,8 +118,7 @@ export default function SubmitJournalPage() {
         <PageNav
           className="mb-6"
           items={[
-            { href: '/journals', label: 'Back to Journals', icon: '←' },
-            { href: '/', label: 'Home', icon: '🏠' },
+            { href: '/journals', label: 'Back to Journals' },
           ]}
         />
         <header className="mb-10">
