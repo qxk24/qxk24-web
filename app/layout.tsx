@@ -22,22 +22,29 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <header className="border-b border-gray-100 bg-white sticky top-0 z-10">
-          <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
-            <Link href="/" className="font-bold text-gray-900 tracking-tight">
+        <nav className="border-b border-gray-100 sticky top-0 bg-white z-50">
+          <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
+            <Link
+              href="/"
+              className="font-bold text-gray-900 hover:text-amber-500 transition-colors text-lg"
+            >
               QXK24
             </Link>
-            <nav className="flex items-center gap-6 text-sm text-gray-600">
-              <Link href="/journals" className="hover:text-amber-600">Journals</Link>
-              <Link href="/journals/submit" className="hover:text-amber-600">Submit</Link>
-              <Link href="/leaderboard" className="hover:text-amber-600">Leaderboard</Link>
-            </nav>
+
+            <div className="flex items-center gap-6 text-sm text-gray-600">
+              <Link href="/journals" className="hover:text-gray-900 transition-colors">
+                Journals
+              </Link>
+              <Link href="/journals/submit" className="hover:text-gray-900 transition-colors">
+                Submit
+              </Link>
+              <Link href="/leaderboard" className="hover:text-gray-900 transition-colors">
+                Leaderboard
+              </Link>
+            </div>
           </div>
-        </header>
+        </nav>
         {children}
-        <footer className="border-t border-gray-100 mt-16 py-8 text-center text-sm text-gray-400">
-          QXK24 · Alamtologi Constitutional Framework · Masa Bayu
-        </footer>
       </body>
     </html>
   );
