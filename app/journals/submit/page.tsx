@@ -95,6 +95,13 @@ export default function SubmitJournalPage() {
     return (
       <main className="min-h-screen flex items-center justify-center px-6">
         <div className="max-w-md w-full text-center">
+          <PageNav
+            className="mb-6 justify-center"
+            items={[
+              { href: '/journals', label: 'Back to Journals', icon: '←' },
+              { href: '/', label: 'Home', icon: '🏠' },
+            ]}
+          />
           <div className="text-5xl mb-4">✅</div>
           <h1 className="text-2xl font-bold text-gray-900 mb-3">Journal Submitted</h1>
           <p className="text-gray-600 mb-6">{success}</p>
