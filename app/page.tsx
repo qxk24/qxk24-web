@@ -195,21 +195,21 @@ export default function HomePage() {
 
           <div className="h-px bg-gray-100 mb-6" />
 
-          <div className="flex flex-wrap items-center gap-x-8 gap-y-3 text-sm text-gray-400">
-            <Link href="/journals" className="hover:text-gray-700 transition-colors">
+          <div className="grid grid-cols-5 items-center gap-3 text-xs sm:text-sm text-gray-400">
+            <Link href="/journals" className="hover:text-gray-700 transition-colors text-center">
               Journals
             </Link>
-            <Link href="/journals/submit" className="hover:text-gray-700 transition-colors">
+            <Link href="/journals/submit" className="hover:text-gray-700 transition-colors text-center">
               Submit
             </Link>
-            <Link href="/leaderboard" className="hover:text-gray-700 transition-colors">
+            <Link href="/leaderboard" className="hover:text-gray-700 transition-colors text-center">
               Leaderboard
             </Link>
             <a
               href="https://github.com/qxk24"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-gray-700 transition-colors"
+              className="hover:text-gray-700 transition-colors text-center"
             >
               GitHub
             </a>
@@ -217,7 +217,7 @@ export default function HomePage() {
               href="https://www.npmjs.com/package/@qxk24/sdk"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-gray-700 transition-colors"
+              className="hover:text-gray-700 transition-colors text-center"
             >
               npm
             </a>
