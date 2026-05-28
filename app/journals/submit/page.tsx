@@ -99,6 +99,7 @@ export default function SubmitJournalPage() {
             className="mb-6 justify-center"
             items={[
               { href: '/journals', label: 'Back to Journals' },
+              { href: '/', label: 'Home' },
             ]}
           />
           <div className="text-5xl mb-4">✅</div>
@@ -119,6 +120,7 @@ export default function SubmitJournalPage() {
           className="mb-6"
           items={[
             { href: '/journals', label: 'Back to Journals' },
+            { href: '/', label: 'Home' },
           ]}
         />
         <header className="mb-10">

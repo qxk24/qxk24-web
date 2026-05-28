@@ -49,6 +49,7 @@ export default async function JournalPage({
           className="mb-6"
           items={[
             { href: '/journals', label: 'Back to Journals' },
+            { href: '/', label: 'Home' },
           ]}
         />
         <header className="mb-10">

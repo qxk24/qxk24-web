@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { JournalAPI } from '@/lib/api';
 import { StarRating } from '@/components/journal/StarRating';
+import { PageNav } from '@/components/navigation/PageNav';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -20,6 +21,12 @@ export default async function LeaderboardPage() {
   return (
     <main className="min-h-screen bg-white">
       <div className="max-w-3xl mx-auto px-6 py-16">
+        <PageNav
+          className="mb-6"
+          items={[
+            { href: '/', label: 'Home' },
+          ]}
+        />
         <header className="mb-10">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Journal Leaderboard</h1>
           <p className="text-gray-500">
