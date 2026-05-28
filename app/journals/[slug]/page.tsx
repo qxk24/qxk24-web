@@ -4,6 +4,7 @@ import { AnalysisSection } from '@/components/journal/AnalysisSection';
 import { ReactionBar } from '@/components/journal/ReactionBar';
 import { CommentSection } from '@/components/journal/CommentSection';
 import { StarRating } from '@/components/journal/StarRating';
+import { PageNav } from '@/components/navigation/PageNav';
 import type { Metadata } from 'next';
 
 export async function generateMetadata({
@@ -44,6 +45,13 @@ export default async function JournalPage({
   return (
     <main className="min-h-screen bg-white">
       <div className="max-w-3xl mx-auto px-6 py-16">
+        <PageNav
+          className="mb-6"
+          items={[
+            { href: '/journals', label: 'Back to Journals', icon: '←' },
+            { href: '/', label: 'Home', icon: '🏠' },
+          ]}
+        />
         <header className="mb-10">
           <span className="text-xs font-medium text-amber-600 bg-amber-50 px-3 py-1 rounded-full capitalize">
             {journal.category.replace('-', ' ')}

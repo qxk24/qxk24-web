@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { JournalAPI } from '@/lib/api';
+import { PageNav } from '@/components/navigation/PageNav';
 
 const CATEGORIES = [
   { value: 'alamtologi', label: 'Alamtologi' },
@@ -108,6 +109,13 @@ export default function SubmitJournalPage() {
   return (
     <main className="min-h-screen bg-white">
       <div className="max-w-2xl mx-auto px-6 py-16">
+        <PageNav
+          className="mb-6"
+          items={[
+            { href: '/journals', label: 'Back to Journals', icon: '←' },
+            { href: '/', label: 'Home', icon: '🏠' },
+          ]}
+        />
         <header className="mb-10">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Submit a Journal</h1>
           <p className="text-gray-500">
