@@ -21,6 +21,67 @@
     0%, 100% { opacity: 0.3; transform: scale(0.85); }
     50% { opacity: 1; transform: scale(1); }
   }
+
+  @keyframes journalGradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  @keyframes journalFloat {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-12px) rotate(2deg); }
+  }
+
+  @keyframes journalOrbPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 40px var(--orb-glow); }
+    50% { transform: scale(1.06); box-shadow: 0 0 70px var(--orb-glow); }
+  }
+
+  @keyframes journalBarGrow {
+    from { transform: scaleY(0); opacity: 0; }
+    to { transform: scaleY(1); opacity: 1; }
+  }
+
+  @keyframes journalSlideIn {
+    from { opacity: 0; transform: translateX(-24px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes journalShimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .journal-bg-animated {
+    background: linear-gradient(
+      125deg,
+      #0f0a1e 0%,
+      #1a1035 25%,
+      #0c2340 50%,
+      #1b3d2f 75%,
+      #2d1b4e 100%
+    );
+    background-size: 400% 400%;
+    animation: journalGradientShift 18s ease infinite;
+  }
+
+  .journal-orb-pulse {
+    animation: journalOrbPulse 3.5s ease-in-out infinite;
+  }
+
+  .journal-float {
+    animation: journalFloat 6s ease-in-out infinite;
+  }
+
+  .journal-bar-grow {
+    transform-origin: bottom center;
+    animation: journalBarGrow 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .journal-audit-slide {
+    animation: journalSlideIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
 }
 
 ::-webkit-scrollbar { width: 4px; }

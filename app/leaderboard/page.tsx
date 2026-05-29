@@ -63,7 +63,7 @@ export default async function LeaderboardPage() {
               return (
                 <Link
                   key={entry._id}
-                  href={`/journals/${entry.slug}`}
+                  href={`/journals/community/${entry.slug}`}
                   className="block p-5 rounded-2xl border border-gray-100 hover:border-amber-200 transition-all"
                 >
                   <div className="flex items-start gap-4">

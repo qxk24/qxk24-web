@@ -2,11 +2,11 @@
  * ============================================================
  * QIUBBX MANAGEMENT SYSTEM
  * ============================================================
- * Module      : ADAM Chat
+ * Module      : ADAM Session Sleep Beacon
  * Platform    : Web (Next.js)
  * QXK24       : Kernel v1.7.0
  * Founder     : Masa Bayu
- * Created     : 2026-05-28
+ * Created     : 2026-05-29
  * ============================================================
  * CONSTITUTIONAL DECLARATION:
  * This module operates under the Alamtologi Constitutional
@@ -15,18 +15,20 @@
  * ============================================================
  */
 
-'use client';
+import { ADAM_API } from './adam-chat-types';
 
-import type { AdamUserProfile } from './AdamGate';
-import ADAMChatView from './adam/ADAMChatView';
-import { useADAMChat } from '@/hooks/useADAMChat';
+export function sendAdamSleepBeacon(token: string, sessionId: string): void {
+  if (!token || !sessionId) return;
 
-interface Props {
-  profile: AdamUserProfile;
-  onSignOut: () => void;
+  void fetch(`${ADAM_API}/api/adam/auth/session/sleep`, {
+    method:  'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization:  `Bearer ${token}`,
+    },
+    body:    JSON.stringify({ sessionId }),
+    keepalive: true,
+  }).catch(() => {});
 }
 
-export default function ADAMChat({ profile, onSignOut }: Props) {
-  const chat = useADAMChat(profile, onSignOut);
-  return <ADAMChatView chat={chat} onSignOut={onSignOut} />;
-}
+export const ADAM_SLEEP_MS = 30 * 60 * 1000;

@@ -15,53 +15,38 @@
 import { useEffect, useState } from 'react';
 import AdamGate, { type AdamUserProfile } from '@/components/AdamGate';
 import ADAMChat from '@/components/ADAMChat';
+import {
+  adamApiFetch,
+  clearAdamProfile,
+  readAdamProfile,
+  writeAdamProfile,
+} from '@/lib/adam-session-storage';
 
 const API = process.env.NEXT_PUBLIC_QXK24_API_URL ?? 'https://api.qxk24.com';
-const PROFILE_KEY = 'qxk24_adam_profile';
-const LEGACY_TOKEN_KEY = 'qxk24_adam_token';
-
-function readStoredProfile(): AdamUserProfile | null {
-  const raw = sessionStorage.getItem(PROFILE_KEY);
-  if (!raw) {
-    const legacy = sessionStorage.getItem(LEGACY_TOKEN_KEY);
-    if (legacy) {
-      return { token: legacy, role: 'founder', userId: 'masa-bayu', userName: 'Masa Bayu' };
-    }
-    return null;
-  }
-
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (typeof parsed === 'string' && parsed.length > 0) {
-      return { token: parsed, role: 'founder', userId: 'masa-bayu', userName: 'Masa Bayu' };
-    }
-    if (parsed && typeof parsed === 'object' && 'token' in parsed) {
-      const p = parsed as AdamUserProfile;
-      if (typeof p.token === 'string' && p.token.length > 0) return p;
-    }
-  } catch {
-    sessionStorage.removeItem(PROFILE_KEY);
-  }
-  return null;
-}
 
 export default function ADAMPage() {
   const [profile, setProfile] = useState<AdamUserProfile | null>(null);
   const [checking, setChecking] = useState(true);
+  /** Bumped on each login so mobile gets a fresh chat mount + session load */
+  const [chatEpoch, setChatEpoch] = useState(0);
 
   useEffect(() => {
-    const stored = readStoredProfile();
+    const stored = readAdamProfile();
     if (!stored?.token) {
       setChecking(false);
       return;
     }
 
-    fetch(`${API}/api/adam/auth/verify`, {
-      headers: { Authorization: `Bearer ${stored.token}` },
-      method: 'POST',
-    })
-      .then((r) => r.json())
+    adamApiFetch(`${API}/api/adam/auth/verify`, stored.token, { method: 'POST' })
+      .then(async (r) => {
+        if (r.status === 401 || r.status === 403) {
+          clearAdamProfile();
+          return null;
+        }
+        return r.json();
+      })
       .then((d) => {
+        if (!d) return;
         if (d.success && d.valid) {
           const next: AdamUserProfile = {
             token:    stored.token,
@@ -69,29 +54,31 @@ export default function ADAMPage() {
             userId:   d.userId ?? stored.userId ?? 'masa-bayu',
             userName: d.name ?? stored.userName ?? 'Masa Bayu',
           };
-          sessionStorage.setItem(PROFILE_KEY, JSON.stringify(next));
-          sessionStorage.removeItem(LEGACY_TOKEN_KEY);
+          writeAdamProfile(next);
           setProfile(next);
+          setChatEpoch((n) => n + 1);
         } else {
-          sessionStorage.removeItem(PROFILE_KEY);
-          sessionStorage.removeItem(LEGACY_TOKEN_KEY);
+          clearAdamProfile();
         }
       })
       .catch(() => {
-        sessionStorage.removeItem(PROFILE_KEY);
-        sessionStorage.removeItem(LEGACY_TOKEN_KEY);
+        // Flaky mobile network — keep profile; chat will retry session load
+        setProfile(stored);
+        setChatEpoch((n) => n + 1);
       })
       .finally(() => setChecking(false));
   }, []);
 
   function handleAuth(p: AdamUserProfile) {
-    sessionStorage.setItem(PROFILE_KEY, JSON.stringify(p));
+    writeAdamProfile(p);
     setProfile(p);
+    setChatEpoch((n) => n + 1);
   }
 
   function handleSignOut() {
-    sessionStorage.removeItem(PROFILE_KEY);
+    clearAdamProfile();
     setProfile(null);
+    setChatEpoch(0);
   }
 
   if (checking) {
@@ -111,5 +98,13 @@ export default function ADAMPage() {
   }
 
   if (!profile?.token) return <AdamGate onAuthenticated={handleAuth} />;
-  return <ADAMChat profile={profile} onSignOut={handleSignOut} />;
+  return (
+    <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <ADAMChat
+        key={`${profile.userId}-${chatEpoch}`}
+        profile={profile}
+        onSignOut={handleSignOut}
+      />
+    </div>
+  );
 }

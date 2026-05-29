@@ -11,7 +11,7 @@ export function JournalCard({ journal }: JournalCardProps) {
 
   return (
     <Link
-      href={`/journals/${journal.slug}`}
+      href={`/journals/community/${journal.slug}`}
       className="block p-6 rounded-2xl border border-gray-100 hover:border-amber-200 hover:shadow-sm transition-all"
     >
       <span className="text-xs font-medium text-amber-600 bg-amber-50 px-3 py-1 rounded-full capitalize">

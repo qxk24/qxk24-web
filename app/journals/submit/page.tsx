@@ -2,214 +2,217 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { JournalAPI } from '@/lib/api';
-import { PageNav } from '@/components/navigation/PageNav';
+import { AdamJournalAPI } from '@/lib/adam-journal-api';
+import type { AlamtologiPrinciple } from '@/lib/adam-journal-types';
+import { JudgmentOrb } from '@/components/journal/constitutional/JudgmentOrb';
 
 const CATEGORIES = [
-  { value: 'alamtologi', label: 'Alamtologi' },
-  { value: 'quran-science', label: 'Quran Science' },
-  { value: 'governance', label: 'Governance' },
-  { value: 'education', label: 'Education' },
-  { value: 'technology', label: 'Technology' },
-  { value: 'economics', label: 'Economics' },
-  { value: 'social', label: 'Social Sciences' },
-  { value: 'health', label: 'Health' },
-  { value: 'environment', label: 'Environment' },
-  { value: 'other', label: 'Other' },
+  { value: 'RESEARCH', label: 'Research' },
+  { value: 'APPLICATION', label: 'Application' },
+  { value: 'CASE_STUDY', label: 'Case study' },
+  { value: 'THEORY', label: 'Theory' },
+  { value: 'IMPLEMENTATION', label: 'Implementation' },
+] as const;
+
+const PRINCIPLES: AlamtologiPrinciple[] = [
+  'MASA', 'TENAGA', 'AIR', 'API', 'BUMI', 'CAHAYA', 'RUANG',
 ];
-
-const LANGUAGES = [
-  { value: 'en', label: 'English' },
-  { value: 'ms', label: 'Malay' },
-  { value: 'ar', label: 'Arabic' },
-];
-
-interface FormState {
-  title: string;
-  abstract: string;
-  body: string;
-  keywords: string;
-  category: string;
-  references: string;
-  affiliations: string;
-  language: string;
-  contributorName: string;
-  contributorEmail: string;
-  contributorBio: string;
-  isAnonymous: boolean;
-}
-
-const INITIAL: FormState = {
-  title: '',
-  abstract: '',
-  body: '',
-  keywords: '',
-  category: 'alamtologi',
-  references: '',
-  affiliations: '',
-  language: 'en',
-  contributorName: '',
-  contributorEmail: '',
-  contributorBio: '',
-  isAnonymous: false,
-};
-
-const inputClass =
-  'w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100';
 
 export default function SubmitJournalPage() {
-  const [form, setForm] = useState<FormState>(INITIAL);
+  const [title, setTitle] = useState('');
+  const [abstract, setAbstract] = useState('');
+  const [rawContent, setRawContent] = useState('');
+  const [category, setCategory] = useState<string>('RESEARCH');
+  const [principlesFocus, setPrinciplesFocus] = useState<AlamtologiPrinciple[]>(['CAHAYA']);
+  const [authorName, setAuthorName] = useState('');
+  const [authorEmail, setAuthorEmail] = useState('');
+  const [authorOrg, setAuthorOrg] = useState('');
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [result, setResult] = useState<Awaited<ReturnType<typeof AdamJournalAPI.submit>> | null>(null);
 
-  const set =
-    (k: keyof FormState) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-      const v = e.target.type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value;
-      setForm((f) => ({ ...f, [k]: v }));
-    };
+  function togglePrinciple(p: AlamtologiPrinciple) {
+    setPrinciplesFocus((prev) =>
+      prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p],
+    );
+  }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (principlesFocus.length === 0) {
+      setError('Select at least one Alamtologi principle.');
+      return;
+    }
     setLoading(true);
     setError('');
     try {
-      const body = {
-        ...form,
-        keywords: form.keywords.split(',').map((k) => k.trim()).filter(Boolean),
-        references: form.references.split('\n').map((r) => r.trim()).filter(Boolean),
-        affiliations: form.affiliations.split('\n').map((a) => a.trim()).filter(Boolean),
-      };
-      const res = await JournalAPI.submit(body);
-      setSuccess(res.message);
+      const journal = await AdamJournalAPI.submit({
+        title,
+        abstract,
+        rawContent,
+        category,
+        principlesFocus,
+        authorName,
+        authorEmail,
+        authorOrg: authorOrg || undefined,
+      });
+      setResult(journal);
     } catch (err) {
       setError((err as Error).message);
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  if (success) {
+  if (result) {
     return (
-      <main className="min-h-screen flex items-center justify-center px-6">
-        <div className="max-w-md w-full text-center">
-          <PageNav
-            className="mb-6 justify-center"
-            items={[
-              { href: '/journals', label: 'Back to Journals' },
-              { href: '/', label: 'Home' },
-            ]}
-          />
-          <div className="text-5xl mb-4">✅</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-3">Journal Submitted</h1>
-          <p className="text-gray-600 mb-6">{success}</p>
-          <Link href="/journals" className="px-6 py-3 bg-amber-500 text-white rounded-xl text-sm font-medium">
-            Browse Journals
+      <div className="min-h-screen journal-bg-animated text-white flex items-center justify-center px-6">
+        <div
+          className="max-w-lg w-full text-center p-10 rounded-3xl border border-white/20 backdrop-blur-xl journal-bar-grow"
+          style={{ background: 'rgba(15,10,30,0.85)' }}
+        >
+          <JudgmentOrb judgment={result.judgment} ahriScore={result.ahriScore} />
+          <h1 className="text-2xl font-bold mt-8 mb-2">Submitted for constitutional review</h1>
+          <p className="text-white/65 text-sm mb-6">
+            ADAM has analysed your manuscript and recorded a <strong>SUBMISSION</strong> stage audit.
+            The Founder will review before publication.
+          </p>
+          <p className="text-xs text-white/45 font-mono mb-8 break-all">ID: {result.id}</p>
+          <Link
+            href="/journals"
+            className="inline-block px-8 py-3 rounded-full font-semibold text-slate-900"
+            style={{ background: 'linear-gradient(90deg, #fbbf24, #f97316)' }}
+          >
+            Back to journals
           </Link>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-white">
-      <div className="max-w-2xl mx-auto px-6 py-16">
-        <PageNav
-          className="mb-6"
-          items={[
-            { href: '/journals', label: 'Back to Journals' },
-            { href: '/', label: 'Home' },
-          ]}
-        />
-        <header className="mb-10">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Submit a Journal</h1>
-          <p className="text-gray-500">
-            Your submission will be reviewed and analysed by <strong>Masa Bayu</strong>.
-          </p>
-        </header>
+    <div className="min-h-screen journal-bg-animated text-white">
+      <div className="max-w-2xl mx-auto px-6 py-16 relative z-10">
+        <Link href="/journals" className="text-white/60 hover:text-amber-300 text-sm">
+          ← Journals
+        </Link>
+        <h1 className="text-3xl font-bold mt-6 mb-2">Submit manuscript</h1>
+        <p className="text-white/60 mb-10">
+          ADAM will structure your work, score the seven principles, and open the constitutional audit trail.
+        </p>
 
-        <div className="flex items-center gap-2 mb-10">
-          {([1, 2, 3] as const).map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => setStep(s)}
-              className={`w-8 h-8 rounded-full text-sm font-medium ${
-                step === s ? 'bg-amber-500 text-white' : step > s ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-400'
-              }`}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <Field label="Title" value={title} onChange={setTitle} required minLength={10} />
+          <Field label="Abstract (min 100 characters)" value={abstract} onChange={setAbstract} required multiline rows={4} />
+          <Field label="Full manuscript (min 500 characters)" value={rawContent} onChange={setRawContent} required multiline rows={12} />
+
+          <div>
+            <label className="block text-xs uppercase tracking-widest text-white/50 mb-2">Category</label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className={inputClass}
             >
-              {s}
-            </button>
-          ))}
-        </div>
+              {CATEGORIES.map((c) => (
+                <option key={c.value} value={c.value}>{c.label}</option>
+              ))}
+            </select>
+          </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {step === 1 && (
-            <>
-              <input type="text" placeholder="Full name *" value={form.contributorName} onChange={set('contributorName')} required className={inputClass} />
-              <input type="email" placeholder="Email *" value={form.contributorEmail} onChange={set('contributorEmail')} required className={inputClass} />
-              <textarea placeholder="Short bio" value={form.contributorBio} onChange={set('contributorBio')} rows={3} className={`${inputClass} resize-none`} />
-              <textarea placeholder="Affiliations (one per line)" value={form.affiliations} onChange={set('affiliations')} rows={3} className={`${inputClass} resize-none`} />
-              <label className="flex items-center gap-2 text-sm text-gray-600">
-                <input type="checkbox" checked={form.isAnonymous} onChange={set('isAnonymous')} />
-                Publish anonymously
-              </label>
-              <button type="button" onClick={() => setStep(2)} className="w-full py-3 bg-amber-500 text-white rounded-xl font-medium">
-                Continue →
-              </button>
-            </>
-          )}
+          <div>
+            <label className="block text-xs uppercase tracking-widest text-white/50 mb-3">
+              Principles in focus
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {PRINCIPLES.map((p) => {
+                const on = principlesFocus.includes(p);
+                return (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => togglePrinciple(p)}
+                    className="px-3 py-1.5 rounded-full text-xs font-bold transition-all"
+                    style={{
+                      background: on ? 'linear-gradient(90deg,#fbbf24,#f97316)' : 'rgba(255,255,255,0.1)',
+                      color: on ? '#1e1b4b' : '#fff',
+                      border: on ? 'none' : '1px solid rgba(255,255,255,0.2)',
+                    }}
+                  >
+                    {p}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-          {step === 2 && (
-            <>
-              <input type="text" placeholder="Title *" value={form.title} onChange={set('title')} required minLength={10} className={inputClass} />
-              <div className="grid grid-cols-2 gap-4">
-                <select value={form.category} onChange={set('category')} className={inputClass}>
-                  {CATEGORIES.map((c) => (
-                    <option key={c.value} value={c.value}>{c.label}</option>
-                  ))}
-                </select>
-                <select value={form.language} onChange={set('language')} className={inputClass}>
-                  {LANGUAGES.map((l) => (
-                    <option key={l.value} value={l.value}>{l.label}</option>
-                  ))}
-                </select>
-              </div>
-              <textarea placeholder="Abstract * (100–3000 chars)" value={form.abstract} onChange={set('abstract')} rows={5} required minLength={100} className={`${inputClass} resize-none`} />
-              <p className="text-xs text-gray-400 -mt-3">{form.abstract.length}/3000</p>
-              <input type="text" placeholder="Keywords * (comma-separated)" value={form.keywords} onChange={set('keywords')} required className={inputClass} />
-              <textarea placeholder="Full paper body *" value={form.body} onChange={set('body')} rows={12} required minLength={500} className={`${inputClass} resize-none font-mono`} />
-              <textarea placeholder="References * (one per line, min 3)" value={form.references} onChange={set('references')} rows={6} required className={`${inputClass} resize-none font-mono`} />
-              <div className="flex gap-3">
-                <button type="button" onClick={() => setStep(1)} className="flex-1 py-3 border border-gray-200 rounded-xl">← Back</button>
-                <button type="button" onClick={() => setStep(3)} className="flex-1 py-3 bg-amber-500 text-white rounded-xl">Review →</button>
-              </div>
-            </>
-          )}
+          <Field label="Author name" value={authorName} onChange={setAuthorName} required />
+          <Field label="Email" value={authorEmail} onChange={setAuthorEmail} required type="email" />
+          <Field label="Organisation (optional)" value={authorOrg} onChange={setAuthorOrg} />
 
-          {step === 3 && (
-            <>
-              <div className="p-5 bg-gray-50 rounded-2xl text-sm space-y-2">
-                <p><span className="text-gray-400">Title:</span> {form.title}</p>
-                <p><span className="text-gray-400">Category:</span> {form.category}</p>
-                <p><span className="text-gray-400">Contributor:</span> {form.isAnonymous ? 'Anonymous' : form.contributorName}</p>
-              </div>
-              <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100 text-sm text-amber-800">
-                By submitting, you agree that Masa Bayu will publish an Alamtologi analysis on QXK24.com.
-              </div>
-              {error && <p className="text-red-500 text-sm">{error}</p>}
-              <div className="flex gap-3">
-                <button type="button" onClick={() => setStep(2)} className="flex-1 py-3 border border-gray-200 rounded-xl">← Back</button>
-                <button type="submit" disabled={loading} className="flex-1 py-3 bg-amber-500 text-white rounded-xl disabled:opacity-50">
-                  {loading ? 'Submitting…' : 'Submit Journal'}
-                </button>
-              </div>
-            </>
-          )}
+          {error && <p className="text-red-300 text-sm">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-4 rounded-2xl font-bold text-slate-900 disabled:opacity-50"
+            style={{
+              background: 'linear-gradient(90deg, #a78bfa, #38bdf8, #fbbf24)',
+              backgroundSize: '200% auto',
+              animation: loading ? undefined : 'journalGradientShift 6s ease infinite',
+            }}
+          >
+            {loading ? 'ADAM is reading…' : 'Submit for constitutional analysis'}
+          </button>
         </form>
       </div>
-    </main>
+    </div>
+  );
+}
+
+const inputClass =
+  'w-full px-4 py-3 rounded-xl bg-black/30 border border-white/20 text-white text-sm focus:outline-none focus:border-amber-400';
+
+function Field({
+  label,
+  value,
+  onChange,
+  required,
+  multiline,
+  rows = 3,
+  type = 'text',
+  minLength,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  required?: boolean;
+  multiline?: boolean;
+  rows?: number;
+  type?: string;
+  minLength?: number;
+}) {
+  return (
+    <div>
+      <label className="block text-xs uppercase tracking-widest text-white/50 mb-2">{label}</label>
+      {multiline ? (
+        <textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          required={required}
+          rows={rows}
+          minLength={minLength}
+          className={inputClass}
+        />
+      ) : (
+        <input
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          required={required}
+          minLength={minLength}
+          className={inputClass}
+        />
+      )}
+    </div>
   );
 }

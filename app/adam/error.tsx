@@ -13,6 +13,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { clearAdamProfile } from '@/lib/adam-session-storage';
 
 export default function ADAMError({
   error,
@@ -22,12 +23,7 @@ export default function ADAMError({
   reset: () => void;
 }) {
   useEffect(() => {
-    try {
-      sessionStorage.removeItem('qxk24_adam_profile');
-      sessionStorage.removeItem('qxk24_adam_token');
-    } catch {
-      // ignore
-    }
+    clearAdamProfile();
   }, []);
 
   return (
