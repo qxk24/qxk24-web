@@ -16,25 +16,25 @@
  */
 
 import { readApiJson } from '../api-response';
-import { ADAM_API } from './adam-chat-types';
 
 export function isPersistedAdamMessageId(id: string): boolean {
   return !id.startsWith('pending-');
 }
 
 export async function deleteAdamMessage(params: {
+  apiBase: string;
   token: string;
   messageId: string;
   isFounder: boolean;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  const { token, messageId, isFounder } = params;
+  const { apiBase, token, messageId, isFounder } = params;
   if (!isPersistedAdamMessageId(messageId)) {
     return { ok: true };
   }
 
   const deleteUrl = isFounder
-    ? `${ADAM_API}/api/adam/chat/messages/${messageId}`
-    : `${ADAM_API}/api/adam/student/chat/messages/${messageId}`;
+    ? `${apiBase}/api/adam/chat/messages/${messageId}`
+    : `${apiBase}/api/adam/student/chat/messages/${messageId}`;
 
   try {
     const res = await fetch(deleteUrl, {

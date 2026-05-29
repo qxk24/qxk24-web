@@ -20,8 +20,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { detectFounderFile, supportedFormatsHint } from '../lib/founder-file';
 import { readApiJson } from '../lib/api-response';
-
-const API = process.env.NEXT_PUBLIC_QXK24_API_URL ?? 'https://api.qxk24.com';
+import { useAdamStack } from '@/lib/adam/adam-stack-context';
 const MAX_SIZE = 30 * 1024 * 1024;
 
 const CATEGORIES = [
@@ -52,6 +51,7 @@ function formatSize(bytes: number): string {
 }
 
 export default function ADAMKnowledge({ token }: Props) {
+  const { apiBase } = useAdamStack();
   const [absorptions, setAbsorptions] = useState<AbsorptionRecord[]>([]);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -67,7 +67,7 @@ export default function ADAMKnowledge({ token }: Props) {
 
   const loadAbsorptions = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/api/adam/knowledge`, {
+      const res = await fetch(`${apiBase}/api/adam/knowledge`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -129,7 +129,7 @@ export default function ADAMKnowledge({ token }: Props) {
         setProgress((prev) => Math.min(prev + 4, 90));
       }, 400);
 
-      const res = await fetch(`${API}/api/adam/knowledge/upload`, {
+      const res = await fetch(`${apiBase}/api/adam/knowledge/upload`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData,

@@ -17,7 +17,6 @@
 
 import { readApiJson } from '../api-response';
 import { adamApiFetch } from '../adam-session-storage';
-import { ADAM_API } from './adam-chat-types';
 
 export interface AidilFamilyStageCard {
   family: string;
@@ -66,9 +65,10 @@ export interface AidilStagesResponse {
 }
 
 export async function fetchAidilStageDashboard(
+  apiBase: string,
   token: string,
 ): Promise<AidilStagesResponse> {
-  const res = await adamApiFetch(`${ADAM_API}/api/adam/brain/stages`, token);
+  const res = await adamApiFetch(`${apiBase}/api/adam/brain/stages`, token);
   const parsed = await readApiJson(res);
   if (!parsed.ok || !parsed.body?.dashboard) {
     throw new Error(parsed.errorMessage || 'Could not load AIDIL stage dashboard.');

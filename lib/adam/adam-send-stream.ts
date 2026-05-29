@@ -16,7 +16,6 @@
  */
 
 import { readApiJson } from '../api-response';
-import { ADAM_API } from './adam-chat-types';
 import { humanizeAdamError } from './adam-error-text';
 import { cleanAdamText, consumeSseBlocks, extractJudgment } from './adam-sse';
 import type { AdamChatMessage } from './adam-chat-types';
@@ -95,6 +94,7 @@ export async function streamAdamChatTurn(params: {
       callbacks.onSearchDone();
     }
     if (eventName === 'adam_chunk' && typeof parsed.text === 'string') {
+      callbacks.onSearchDone();
       fullText += parsed.text;
       callbacks.onAdamUpdate((prev) =>
         prev.map((m) =>
@@ -104,6 +104,7 @@ export async function streamAdamChatTurn(params: {
     }
     if (eventName === 'adam_error') {
       streamClosed = true;
+      callbacks.onSearchDone();
       const errText = humanizeAdamError(
         typeof parsed.error === 'string'
           ? parsed.error
@@ -117,6 +118,7 @@ export async function streamAdamChatTurn(params: {
     }
     if (eventName === 'adam_complete') {
       streamClosed = true;
+      callbacks.onSearchDone();
       completed = true;
       const fromText = extractJudgment(fullText);
       const judgment = String(parsed.judgment ?? fromText.judgment);
@@ -146,29 +148,34 @@ export async function streamAdamChatTurn(params: {
     }
   };
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    buffer = consumeSseBlocks(buffer, handleSseEvent);
-  }
-  consumeSseBlocks(`${buffer}\n\n`, handleSseEvent);
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      buffer = consumeSseBlocks(buffer, handleSseEvent);
+    }
+    consumeSseBlocks(`${buffer}\n\n`, handleSseEvent);
 
-  // Stream closed after chunks but complete event lost (proxy timeout) — still one turn
-  if (!completed && fullText.trim().length > 0) {
-    completed = true;
-  }
+    // Stream closed after chunks but complete event lost (proxy timeout) — still one turn
+    if (!completed && fullText.trim().length > 0) {
+      completed = true;
+    }
 
-  return { completed, messageId };
+    return { completed, messageId };
+  } finally {
+    callbacks.onSearchDone();
+  }
 }
 
 export function resolveChatUrl(
+  apiBase: string,
   isFounder: boolean,
   studentChannel: 'private' | 'group',
 ): string {
-  if (isFounder) return `${ADAM_API}/api/adam/chat`;
+  if (isFounder) return `${apiBase}/api/adam/chat`;
   if (studentChannel === 'group') {
-    return `${ADAM_API}/api/adam/student/group/chat`;
+    return `${apiBase}/api/adam/student/group/chat`;
   }
-  return `${ADAM_API}/api/adam/student/chat`;
+  return `${apiBase}/api/adam/student/chat`;
 }

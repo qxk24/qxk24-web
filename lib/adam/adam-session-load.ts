@@ -18,7 +18,7 @@
 import type { StudentWorkspace } from '@/components/WorkspaceSelector';
 import { readApiJson } from '../api-response';
 import { adamApiFetch, readLastWorkspaceId } from '../adam-session-storage';
-import { ADAM_API, historyUrl, type FounderView, type StudentChannel } from './adam-chat-types';
+import { historyUrl, type FounderView, type StudentChannel } from './adam-chat-types';
 import { mapHistoryList } from './adam-founder-display';
 import { isAdamAuthFailure } from './adam-fetch-errors';
 
@@ -38,6 +38,8 @@ export interface SessionLoadContext {
   studentChannel: StudentChannel;
   activeWorkspace: StudentWorkspace | null;
   workspaceOverride?: StudentWorkspace | null;
+  apiBase: string;
+  workspaceKeyPrefix: string;
   isStale: () => boolean;
 }
 
@@ -55,10 +57,11 @@ function authFailureResult(
 }
 
 export async function fetchFounderTeachingHistory(
+  apiBase: string,
   token: string,
   isStale: () => boolean,
 ): Promise<SessionLoadResult> {
-  const res = await adamApiFetch(`${ADAM_API}/api/adam/auth/session`, token);
+  const res = await adamApiFetch(`${apiBase}/api/adam/auth/session`, token);
   if (isStale()) return { sessionId: '', messages: [], readOnly: false, error: '' };
   const parsed = await readApiJson(res);
   if (isStale()) return { sessionId: '', messages: [], readOnly: false, error: '' };
@@ -76,7 +79,7 @@ export async function fetchFounderTeachingHistory(
 
   const sid = String(parsed.body.sessionId);
   const histRes = await adamApiFetch(
-    historyUrl(`${ADAM_API}/api/adam/chat/history`, sid),
+    historyUrl(`${apiBase}/api/adam/chat/history`, sid),
     token,
   );
   if (isStale()) return { sessionId: sid, messages: [], readOnly: false, error: '' };
@@ -112,6 +115,8 @@ export async function loadAdamSessionAndHistory(
     studentChannel,
     activeWorkspace,
     workspaceOverride,
+    apiBase,
+    workspaceKeyPrefix,
     isStale,
   } = ctx;
 
@@ -126,7 +131,7 @@ export async function loadAdamSessionAndHistory(
   }
 
   if (isFounder && founderView === 'GROUP') {
-    const histRes = await adamApiFetch(`${ADAM_API}/api/adam/consults/group/history`, token);
+    const histRes = await adamApiFetch(`${apiBase}/api/adam/consults/group/history`, token);
     if (isStale()) return { sessionId: '', messages: [], readOnly: true, error: '' };
     const histParsed = await readApiJson(histRes);
     if (isStale()) return { sessionId: '', messages: [], readOnly: true, error: '' };
@@ -147,13 +152,13 @@ export async function loadAdamSessionAndHistory(
   }
 
   if (!isFounder && studentChannel === 'group') {
-    const sessRes = await adamApiFetch(`${ADAM_API}/api/adam/student/group/session`, token);
+    const sessRes = await adamApiFetch(`${apiBase}/api/adam/student/group/session`, token);
     if (isStale()) return { sessionId: '', messages: [], readOnly: false, error: '' };
     const sessParsed = await readApiJson(sessRes);
     if (isStale()) return { sessionId: '', messages: [], readOnly: false, error: '' };
     const sid = sessParsed.body?.sessionId ? String(sessParsed.body.sessionId) : '';
 
-    const histRes = await adamApiFetch(`${ADAM_API}/api/adam/student/group/history`, token);
+    const histRes = await adamApiFetch(`${apiBase}/api/adam/student/group/history`, token);
     if (isStale()) return { sessionId: sid, messages: [], readOnly: false, error: '' };
     const histParsed = await readApiJson(histRes);
     if (isStale()) return { sessionId: sid, messages: [], readOnly: false, error: '' };
@@ -178,9 +183,9 @@ export async function loadAdamSessionAndHistory(
       workspaceOverride !== undefined ? workspaceOverride : activeWorkspace;
 
     if (!workspace && studentChannel === 'private' && workspaceOverride === undefined) {
-      const lastId = readLastWorkspaceId(userId);
+      const lastId = readLastWorkspaceId(userId, workspaceKeyPrefix);
       if (lastId && lastId !== 'general') {
-        const wsRes = await adamApiFetch(`${ADAM_API}/api/workspaces`, token);
+        const wsRes = await adamApiFetch(`${apiBase}/api/workspaces`, token);
         if (isStale()) return { sessionId: '', messages: [], readOnly: false, error: '' };
         const wsParsed = await readApiJson(wsRes);
         if (isStale()) return { sessionId: '', messages: [], readOnly: false, error: '' };
@@ -196,7 +201,7 @@ export async function loadAdamSessionAndHistory(
     if (workspace) {
       const sid = workspace.sessionId;
       const histRes = await adamApiFetch(
-        historyUrl(`${ADAM_API}/api/adam/student/chat/history`, sid),
+        historyUrl(`${apiBase}/api/adam/student/chat/history`, sid),
         token,
       );
       if (isStale()) return { sessionId: sid, messages: [], readOnly: false, error: '' };
@@ -218,7 +223,7 @@ export async function loadAdamSessionAndHistory(
       };
     }
 
-    const res = await adamApiFetch(`${ADAM_API}/api/adam/student/session`, token);
+    const res = await adamApiFetch(`${apiBase}/api/adam/student/session`, token);
     if (isStale()) return { sessionId: '', messages: [], readOnly: false, error: '' };
     const parsed = await readApiJson(res);
     if (isStale()) return { sessionId: '', messages: [], readOnly: false, error: '' };
@@ -232,7 +237,7 @@ export async function loadAdamSessionAndHistory(
     }
     const sid = String(parsed.body.sessionId);
     const histRes = await adamApiFetch(
-      historyUrl(`${ADAM_API}/api/adam/student/chat/history`, sid),
+      historyUrl(`${apiBase}/api/adam/student/chat/history`, sid),
       token,
     );
     if (isStale()) return { sessionId: sid, messages: [], readOnly: false, error: '' };
@@ -254,5 +259,5 @@ export async function loadAdamSessionAndHistory(
     };
   }
 
-  return fetchFounderTeachingHistory(token, isStale);
+  return fetchFounderTeachingHistory(apiBase, token, isStale);
 }

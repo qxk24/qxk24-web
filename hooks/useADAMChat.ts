@@ -21,8 +21,8 @@ import { useState, useEffect, useRef } from 'react';
 import type { AdamUserProfile } from '@/components/AdamGate';
 import type { StudentWorkspace } from '@/components/WorkspaceSelector';
 import { writeLastWorkspaceId } from '@/lib/adam-session-storage';
+import { useAdamStack } from '@/lib/adam/adam-stack-context';
 import {
-  ADAM_API,
   TEXTAREA_MAX_HEIGHT,
   type AdamChatMessage,
   type FounderView,
@@ -39,6 +39,7 @@ import { ADAM_SLEEP_MS, sendAdamSleepBeacon } from '@/lib/adam/adam-session-slee
 import { useADAMSession } from './useADAMSession';
 
 export function useADAMChat(profile: AdamUserProfile, onSessionExpired?: () => void) {
+  const { apiBase, workspaceKeyPrefix } = useAdamStack();
   const { token, role: userRole, userName, userId } = profile;
   const isFounder = userRole === 'founder';
 
@@ -84,7 +85,7 @@ export function useADAMChat(profile: AdamUserProfile, onSessionExpired?: () => v
 
     const onPageHide = () => {
       const sid = sessionIdRef.current;
-      if (sid) sendAdamSleepBeacon(tokenRef.current, sid);
+      if (sid) sendAdamSleepBeacon(apiBase, tokenRef.current, sid);
     };
 
     window.addEventListener('pagehide', onPageHide);
@@ -98,7 +99,7 @@ export function useADAMChat(profile: AdamUserProfile, onSessionExpired?: () => v
     const resetIdle = () => {
       if (idleTimer) clearTimeout(idleTimer);
       idleTimer = setTimeout(() => {
-        sendAdamSleepBeacon(tokenRef.current, sessionIdRef.current);
+        sendAdamSleepBeacon(apiBase, tokenRef.current, sessionIdRef.current);
       }, ADAM_SLEEP_MS);
     };
 
@@ -152,7 +153,7 @@ export function useADAMChat(profile: AdamUserProfile, onSessionExpired?: () => v
   }
 
   async function removeMessage(messageId: string): Promise<boolean> {
-    const result = await deleteAdamMessage({ token, messageId, isFounder });
+    const result = await deleteAdamMessage({ apiBase, token, messageId, isFounder });
     if (!result.ok) {
       setUploadError(result.error);
       return false;
@@ -184,7 +185,7 @@ export function useADAMChat(profile: AdamUserProfile, onSessionExpired?: () => v
   async function uploadTeachingFile(file: File) {
     setUploading(true);
     setUploadError('');
-    const result = await uploadAdamTeachingFile({ token, sessionId, file });
+    const result = await uploadAdamTeachingFile({ apiBase, token, sessionId, file });
     if (!result.ok) {
       setUploadError(result.error);
     } else {
@@ -276,7 +277,7 @@ export function useADAMChat(profile: AdamUserProfile, onSessionExpired?: () => v
     try {
       turnResult = await streamAdamChatTurn({
         token,
-        chatUrl: resolveChatUrl(isFounder, studentChannel),
+        chatUrl: resolveChatUrl(apiBase, isFounder, studentChannel),
         body,
         adamMsgId,
         signal: streamAbort.signal,
@@ -325,7 +326,7 @@ export function useADAMChat(profile: AdamUserProfile, onSessionExpired?: () => v
 
   async function resolveConsult(consultId: string) {
     try {
-      await fetch(`${ADAM_API}/api/adam/consults/${encodeURIComponent(consultId)}/resolve`, {
+      await fetch(`${apiBase}/api/adam/consults/${encodeURIComponent(consultId)}/resolve`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -352,7 +353,7 @@ export function useADAMChat(profile: AdamUserProfile, onSessionExpired?: () => v
     setMessages([]);
     const sid = ws?.sessionId ?? '';
     session.setSessionId(sid);
-    writeLastWorkspaceId(userId, ws?.workspaceId ?? 'general');
+    writeLastWorkspaceId(userId, ws?.workspaceId ?? 'general', workspaceKeyPrefix);
     // New / empty book: allow send as soon as session id is known (do not wait on history)
     if (ws && sid) {
       setHistoryLoaded(true);

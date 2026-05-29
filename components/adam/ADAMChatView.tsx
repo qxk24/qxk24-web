@@ -17,10 +17,13 @@
 
 'use client';
 
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import ADAMMessage from '../ADAMMessage';
 import ADAMKnowledge from '../ADAMKnowledge';
 import AIDILStageDashboard from './AIDILStageDashboard';
 import WorkspaceSelector from '../WorkspaceSelector';
+import { useAdamStack } from '@/lib/adam/adam-stack-context';
 import {
   ACCEPT_FILES,
   ADAM_MODES,
@@ -29,6 +32,7 @@ import {
   isSendShortcut,
 } from '@/lib/adam/adam-chat-types';
 import type { useADAMChat } from '@/hooks/useADAMChat';
+import styles from './ADAMChatView.module.css';
 
 type ChatState = ReturnType<typeof useADAMChat>;
 
@@ -38,6 +42,8 @@ interface Props {
 }
 
 export default function ADAMChatView({ chat, onSignOut }: Props) {
+  const stack = useAdamStack();
+  const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
   const {
     isFounder,
     token,
@@ -89,81 +95,104 @@ export default function ADAMChatView({ chat, onSignOut }: Props) {
     uploading ||
     !isSessionReadyForSend();
 
+  useEffect(() => {
+    if (!headerMenuOpen) return;
+    const close = () => setHeaderMenuOpen(false);
+    window.addEventListener('click', close);
+    return () => window.removeEventListener('click', close);
+  }, [headerMenuOpen]);
+
+  const subtitle = headerSubtitle || stack.headerEngineLabel;
+
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      flex: 1,
-      minHeight: 0,
-      height: '100%',
-      background: '#fff',
-      maxWidth: 720,
-      margin: '0 auto',
-      width: '100%',
-      overflow: 'hidden',
-    }}>
-      <div style={{
-        padding: '14px 20px',
-        borderBottom: '1px solid #f0f0f0',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexShrink: 0,
-      }}>
-        <div>
-          <h1 style={{ fontSize: 15, fontWeight: 500, color: '#1a1a1a', letterSpacing: '0.15em', margin: 0 }}>
-            ADAM
-          </h1>
-          <p style={{ fontSize: 10, color: '#bbb', letterSpacing: '0.15em', textTransform: 'uppercase', margin: 0 }}>
-            {headerSubtitle}
-          </p>
+    <div className={styles.shell}>
+      {stack.labBanner && (
+        <div className={styles.labBanner}>
+          <span className={styles.labBannerFull}>{stack.labBanner}</span>
+          <span className={styles.labBannerShort}>
+            {stack.labBannerShort ?? stack.labBanner}
+          </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      )}
+
+      <header className={styles.topBar}>
+        <div className={styles.brand}>
+          <h1 className={styles.title}>{stack.title}</h1>
+          <p className={styles.subtitle}>{subtitle}</p>
+        </div>
+
+        <div className={styles.actionsDesktop}>
+          <Link href={stack.crossLinkHref} className={styles.actionBtn}>
+            {stack.crossLinkLabel}
+          </Link>
+          <Link href="/" className={styles.actionBtn}>
+            Home
+          </Link>
           <button
             type="button"
+            className={styles.actionBtn}
             onClick={handleRefreshScreen}
             disabled={refreshing || thinking}
-            style={{
-              fontSize: 11,
-              color: refreshing ? '#999' : '#666',
-              background: '#fafafa',
-              border: '1px solid #e8e8e8',
-              borderRadius: 6,
-              padding: '6px 12px',
-              cursor: refreshing || thinking ? 'not-allowed' : 'pointer',
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              opacity: refreshing || thinking ? 0.6 : 1,
-            }}
           >
             {refreshing ? 'Refreshing…' : 'Refresh'}
           </button>
-          <button
-            type="button"
-            onClick={onSignOut}
-            style={{
-              fontSize: 11,
-              color: '#bbb',
-              background: 'none',
-              border: '1px solid #e8e8e8',
-              borderRadius: 6,
-              padding: '6px 12px',
-              cursor: 'pointer',
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-            }}
-          >
+          <button type="button" className={styles.actionBtnGhost} onClick={onSignOut}>
             Sign Out
           </button>
         </div>
-      </div>
 
-      <div style={{
-        display: 'flex',
-        borderBottom: '1px solid #f0f0f0',
-        flexShrink: 0,
-        overflowX: 'auto',
-      }}>
+        <div className={styles.actionsMobile}>
+          <Link href={stack.crossLinkHref} className={styles.actionBtn}>
+            {stack.crossLinkLabel}
+          </Link>
+          <button
+            type="button"
+            className={styles.actionBtn}
+            onClick={handleRefreshScreen}
+            disabled={refreshing || thinking}
+            aria-label="Refresh"
+          >
+            ↻
+          </button>
+          <div className={styles.menuWrap}>
+            <button
+              type="button"
+              className={styles.actionBtn}
+              aria-label="More actions"
+              onClick={(e) => {
+                e.stopPropagation();
+                setHeaderMenuOpen((open) => !open);
+              }}
+            >
+              ···
+            </button>
+            {headerMenuOpen && (
+              <div
+                className={styles.menuPanel}
+                onClick={(e) => e.stopPropagation()}
+                role="menu"
+              >
+                <Link href="/" className={styles.menuItem} role="menuitem">
+                  Home
+                </Link>
+                <button
+                  type="button"
+                  className={styles.menuItem}
+                  role="menuitem"
+                  onClick={() => {
+                    setHeaderMenuOpen(false);
+                    onSignOut();
+                  }}
+                >
+                  Sign Out
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
+      <nav className={styles.viewTabs} aria-label="ADAM views">
         {isFounder ? (
           ([
             ['CHAT', 'Teaching'],
@@ -176,19 +205,7 @@ export default function ADAMChatView({ chat, onSignOut }: Props) {
               key={v}
               type="button"
               onClick={() => switchFounderView(v)}
-              style={{
-                flex: 1,
-                minWidth: 72,
-                padding: '11px 8px',
-                fontSize: 10,
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
-                border: 'none',
-                borderBottom: founderView === v ? '2px solid #1a1a1a' : '2px solid transparent',
-                background: 'none',
-                color: founderView === v ? '#1a1a1a' : '#bbb',
-                cursor: 'pointer',
-              }}
+              className={founderView === v ? styles.viewTabActive : styles.viewTab}
             >
               {label}
             </button>
@@ -199,24 +216,13 @@ export default function ADAMChatView({ chat, onSignOut }: Props) {
               key={ch}
               type="button"
               onClick={() => switchStudentChannel(ch)}
-              style={{
-                flex: 1,
-                padding: '11px 8px',
-                fontSize: 11,
-                letterSpacing: '0.15em',
-                textTransform: 'uppercase',
-                border: 'none',
-                borderBottom: studentChannel === ch ? '2px solid #1a1a1a' : '2px solid transparent',
-                background: 'none',
-                color: studentChannel === ch ? '#1a1a1a' : '#bbb',
-                cursor: 'pointer',
-              }}
+              className={studentChannel === ch ? styles.viewTabActive : styles.viewTab}
             >
               {ch === 'private' ? 'Private' : 'Group'}
             </button>
           ))
         )}
-      </div>
+      </nav>
 
       {!isFounder && studentChannel === 'private' && (
         <WorkspaceSelector
@@ -280,32 +286,13 @@ export default function ADAMChatView({ chat, onSignOut }: Props) {
         {((isFounder && activeChatView) || !isFounder) && (
           <>
             {isFounder && founderView === 'CHAT' && (
-              <div style={{
-                padding: '8px 16px',
-                borderBottom: '1px solid #f5f5f5',
-                display: 'flex',
-                gap: 6,
-                overflowX: 'auto',
-                flexShrink: 0,
-              }}>
+              <div className={styles.modeRow}>
                 {ADAM_MODES.map((m) => (
                   <button
                     key={m}
                     type="button"
                     onClick={() => setMode(m)}
-                    style={{
-                      padding: '6px 14px',
-                      fontSize: 10,
-                      letterSpacing: '0.1em',
-                      borderRadius: 20,
-                      border: mode === m ? '1px solid #1a1a1a' : '1px solid #e8e8e8',
-                      background: mode === m ? '#1a1a1a' : '#fff',
-                      color: mode === m ? '#fff' : '#aaa',
-                      cursor: 'pointer',
-                      whiteSpace: 'nowrap',
-                      textTransform: 'uppercase',
-                      flexShrink: 0,
-                    }}
+                    className={mode === m ? styles.modeChipActive : styles.modeChip}
                   >
                     {m.replace('_', ' ')}
                   </button>
@@ -376,10 +363,10 @@ export default function ADAMChatView({ chat, onSignOut }: Props) {
                     fontSize: 13,
                     color: '#2980b9',
                   }}>
-                    🔍 ADAM is searching: <em>&quot;{searchQuery}&quot;</em>
+                    🔍 ADAM sedang mencari: <em>&quot;{searchQuery}&quot;</em>
                   </div>
                 )}
-                {thinking && !isSearching && (
+                {thinking && (
                   <div style={{ display: 'flex', gap: 6, padding: '8px 4px' }}>
                     {[0, 0.2, 0.4].map((delay, i) => (
                       <div

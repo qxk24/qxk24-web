@@ -57,8 +57,8 @@ function removeRaw(key: string): void {
   }
 }
 
-export function readAdamProfile(): AdamUserProfile | null {
-  const raw = readRaw(ADAM_PROFILE_KEY);
+export function readAdamProfile(profileKey = ADAM_PROFILE_KEY): AdamUserProfile | null {
+  const raw = readRaw(profileKey);
   if (!raw) {
     const legacy = readRaw(ADAM_LEGACY_TOKEN_KEY);
     if (legacy) {
@@ -77,28 +77,38 @@ export function readAdamProfile(): AdamUserProfile | null {
       if (typeof p.token === 'string' && p.token.length > 0) return p;
     }
   } catch {
-    clearAdamProfile();
+    clearAdamProfile(profileKey);
   }
   return null;
 }
 
-export function writeAdamProfile(profile: AdamUserProfile): void {
-  writeRaw(ADAM_PROFILE_KEY, JSON.stringify(profile));
+export function writeAdamProfile(
+  profile: AdamUserProfile,
+  profileKey = ADAM_PROFILE_KEY,
+): void {
+  writeRaw(profileKey, JSON.stringify(profile));
   removeRaw(ADAM_LEGACY_TOKEN_KEY);
 }
 
-export function clearAdamProfile(): void {
-  removeRaw(ADAM_PROFILE_KEY);
+export function clearAdamProfile(profileKey = ADAM_PROFILE_KEY): void {
+  removeRaw(profileKey);
   removeRaw(ADAM_LEGACY_TOKEN_KEY);
 }
 
-export function readLastWorkspaceId(userId: string): string | null {
-  const v = readRaw(`${ADAM_WORKSPACE_KEY_PREFIX}${userId}`);
+export function readLastWorkspaceId(
+  userId: string,
+  workspaceKeyPrefix = ADAM_WORKSPACE_KEY_PREFIX,
+): string | null {
+  const v = readRaw(`${workspaceKeyPrefix}${userId}`);
   return v && v.length > 0 ? v : null;
 }
 
-export function writeLastWorkspaceId(userId: string, workspaceId: string | 'general'): void {
-  writeRaw(`${ADAM_WORKSPACE_KEY_PREFIX}${userId}`, workspaceId);
+export function writeLastWorkspaceId(
+  userId: string,
+  workspaceId: string | 'general',
+  workspaceKeyPrefix = ADAM_WORKSPACE_KEY_PREFIX,
+): void {
+  writeRaw(`${workspaceKeyPrefix}${userId}`, workspaceId);
 }
 
 /**

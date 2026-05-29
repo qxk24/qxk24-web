@@ -17,14 +17,15 @@
 
 import { readApiJson } from '../api-response';
 import { formatAdamFetchError } from './adam-fetch-errors';
-import { ADAM_API, MAX_UPLOAD_MB, type PendingUpload } from './adam-chat-types';
+import { MAX_UPLOAD_MB, type PendingUpload } from './adam-chat-types';
 
 export async function uploadAdamTeachingFile(params: {
+  apiBase: string;
   token: string;
   sessionId: string;
   file: File;
 }): Promise<{ ok: true; upload: PendingUpload } | { ok: false; error: string }> {
-  const { token, sessionId, file } = params;
+  const { apiBase, token, sessionId, file } = params;
   if (file.size > MAX_UPLOAD_MB * 1024 * 1024) {
     return { ok: false, error: `File must be ${MAX_UPLOAD_MB}MB or smaller.` };
   }
@@ -34,7 +35,7 @@ export async function uploadAdamTeachingFile(params: {
   if (sessionId) form.append('sessionId', sessionId);
 
   try {
-    const res = await fetch(`${ADAM_API}/api/adam/upload`, {
+    const res = await fetch(`${apiBase}/api/adam/upload`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
       body: form,

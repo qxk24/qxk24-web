@@ -21,8 +21,9 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import type { StudentWorkspace } from '@/components/WorkspaceSelector';
 import { readApiJson } from '@/lib/api-response';
 import { adamApiFetch, readLastWorkspaceId } from '@/lib/adam-session-storage';
+import { clearAdamProfile } from '@/lib/adam-session-storage';
+import { useAdamStack } from '@/lib/adam/adam-stack-context';
 import {
-  ADAM_API,
   historyUrl,
   type AdamChatMessage,
   type ConsultItem,
@@ -32,7 +33,6 @@ import {
 import { mapHistoryList } from '@/lib/adam/adam-founder-display';
 import { loadAdamSessionAndHistory } from '@/lib/adam/adam-session-load';
 import { formatAdamFetchError } from '@/lib/adam/adam-fetch-errors';
-import { clearAdamProfile } from '@/lib/adam-session-storage';
 
 export function useADAMSession(params: {
   token: string;
@@ -57,6 +57,7 @@ export function useADAMSession(params: {
     onSessionExpired,
   } = params;
 
+  const { apiBase, profileKey, workspaceKeyPrefix } = useAdamStack();
   const [messages, setMessages] = useState<AdamChatMessage[]>([]);
   const [sessionId, setSessionId] = useState('');
   const [historyLoaded, setHistoryLoaded] = useState(false);
@@ -79,14 +80,14 @@ export function useADAMSession(params: {
     sessionExpired?: boolean;
   }) => {
     if (result.sessionExpired) {
-      clearAdamProfile();
+      clearAdamProfile(profileKey);
       onSessionExpired?.();
     }
     setSessionId(result.sessionId);
     setMessages(result.messages);
     setReadOnly(result.readOnly);
     setSessionLoadError(result.error);
-  }, [onSessionExpired]);
+  }, [onSessionExpired, profileKey]);
 
   const loadSessionAndHistory = useCallback(async (
     workspaceOverride?: StudentWorkspace | null,
@@ -108,6 +109,8 @@ export function useADAMSession(params: {
         studentChannel,
         activeWorkspace: activeWorkspaceRef.current,
         workspaceOverride,
+        apiBase,
+        workspaceKeyPrefix,
         isStale: stale,
       });
       if (stale()) return;
@@ -119,7 +122,7 @@ export function useADAMSession(params: {
       setSessionLoadError(`${msg} Tap Refresh or sign out and sign in again.`);
       setMessages([]);
     }
-  }, [token, userId, isFounder, founderView, studentChannel, applySessionLoad]);
+  }, [token, userId, isFounder, founderView, studentChannel, applySessionLoad, apiBase, workspaceKeyPrefix]);
 
   const refreshHistoryAfterTurn = useCallback(async (sid: string) => {
     const gen = historyLoadGenRef.current;
@@ -128,7 +131,7 @@ export function useADAMSession(params: {
     try {
       if (isFounder) {
         const histRes = await adamApiFetch(
-          historyUrl(`${ADAM_API}/api/adam/chat/history`, sid),
+          historyUrl(`${apiBase}/api/adam/chat/history`, sid),
           token,
         );
         if (stale()) return;
@@ -144,6 +147,8 @@ export function useADAMSession(params: {
         founderView: 'CHAT',
         studentChannel,
         activeWorkspace: activeWorkspaceRef.current,
+        apiBase,
+        workspaceKeyPrefix,
         isStale: stale,
       });
       if (stale()) return;
@@ -152,12 +157,12 @@ export function useADAMSession(params: {
     } catch (err) {
       console.error('refreshHistoryAfterTurn failed', err);
     }
-  }, [token, userId, isFounder, studentChannel]);
+  }, [token, userId, isFounder, studentChannel, apiBase, workspaceKeyPrefix]);
 
   const loadConsults = useCallback(async () => {
     setConsultsLoading(true);
     try {
-      const res = await adamApiFetch(`${ADAM_API}/api/adam/consults?pending=true`, token);
+      const res = await adamApiFetch(`${apiBase}/api/adam/consults?pending=true`, token);
       const parsed = await readApiJson(res);
       if (parsed.ok && Array.isArray(parsed.body?.consults)) {
         setConsults((parsed.body.consults as ConsultItem[]).map((c) => ({
@@ -170,7 +175,7 @@ export function useADAMSession(params: {
     } finally {
       setConsultsLoading(false);
     }
-  }, [token]);
+  }, [token, apiBase]);
 
   const loadSessionRef = useRef(loadSessionAndHistory);
   loadSessionRef.current = loadSessionAndHistory;
@@ -201,9 +206,9 @@ export function useADAMSession(params: {
 
         let restoredWs: StudentWorkspace | null = null;
         if (!isFounder && studentChannel === 'private') {
-          const lastId = readLastWorkspaceId(userId);
+          const lastId = readLastWorkspaceId(userId, workspaceKeyPrefix);
           if (lastId && lastId !== 'general') {
-            const wsRes = await adamApiFetch(`${ADAM_API}/api/workspaces`, token);
+            const wsRes = await adamApiFetch(`${apiBase}/api/workspaces`, token);
             const wsParsed = await readApiJson(wsRes);
             if (wsParsed.ok && Array.isArray(wsParsed.body?.workspaces)) {
               restoredWs = (wsParsed.body.workspaces as StudentWorkspace[]).find(
@@ -223,7 +228,7 @@ export function useADAMSession(params: {
         setHistoryLoaded(true);
       }
     })();
-  }, [token, isFounder, founderView, studentChannel, loadConsults, userId, onRestoredWorkspace]);
+  }, [token, isFounder, founderView, studentChannel, loadConsults, userId, onRestoredWorkspace, apiBase, workspaceKeyPrefix]);
 
   useEffect(() => {
     if (!token) return;

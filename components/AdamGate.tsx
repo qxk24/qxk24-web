@@ -12,9 +12,9 @@
 
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
-
-const API = process.env.NEXT_PUBLIC_QXK24_API_URL ?? 'https://api.qxk24.com';
+import { useAdamStack } from '@/lib/adam/adam-stack-context';
 
 export interface AdamUserProfile {
   token:    string;
@@ -33,6 +33,7 @@ interface StudentOption {
 }
 
 export default function AdamGate({ onAuthenticated }: Props) {
+  const { apiBase } = useAdamStack();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [students, setStudents] = useState<StudentOption[]>([]);
@@ -40,11 +41,11 @@ export default function AdamGate({ onAuthenticated }: Props) {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetch(`${API}/api/adam/student/accounts`)
+    fetch(`${apiBase}/api/adam/student/accounts`)
       .then((r) => r.json())
       .then((d) => { if (d.success && d.students) setStudents(d.students); })
       .catch(() => {});
-  }, []);
+  }, [apiBase]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -54,8 +55,8 @@ export default function AdamGate({ onAuthenticated }: Props) {
 
     const isFounder = !username.trim();
     const endpoint = isFounder
-      ? `${API}/api/adam/auth/login`
-      : `${API}/api/adam/student/login`;
+      ? `${apiBase}/api/adam/auth/login`
+      : `${apiBase}/api/adam/student/login`;
 
     const body = isFounder
       ? { password: password.trim() }
@@ -100,7 +101,27 @@ export default function AdamGate({ onAuthenticated }: Props) {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '24px 20px',
+      position: 'relative',
     }}>
+      <Link
+        href="/"
+        style={{
+          position: 'absolute',
+          top: 16,
+          right: 20,
+          fontSize: 11,
+          color: '#666',
+          background: '#fff',
+          border: '1px solid #e8e8e8',
+          borderRadius: 6,
+          padding: '6px 12px',
+          letterSpacing: '0.1em',
+          textTransform: 'uppercase',
+          textDecoration: 'none',
+        }}
+      >
+        Home
+      </Link>
       <div style={{ width: '100%', maxWidth: 420 }}>
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
           <p style={{

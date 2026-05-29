@@ -20,11 +20,10 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { readApiJson } from '@/lib/api-response';
 import { adamApiFetch } from '@/lib/adam-session-storage';
+import { useAdamStack } from '@/lib/adam/adam-stack-context';
 
 const TITLE_MAX = 200;
 const DESCRIPTION_MAX = 8000;
-
-const API = process.env.NEXT_PUBLIC_QXK24_API_URL ?? 'https://api.qxk24.com';
 
 const PRINCIPLES = [
   'MASA', 'TENAGA', 'AIR', 'API', 'BUMI', 'CAHAYA', 'RUANG', 'MULTI',
@@ -69,6 +68,7 @@ export default function WorkspaceSelector({
   currentWorkspaceId,
   onWorkspaceSelect,
 }: Props) {
+  const { apiBase } = useAdamStack();
   const [workspaces, setWorkspaces] = useState<StudentWorkspace[]>([]);
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -82,7 +82,7 @@ export default function WorkspaceSelector({
 
   const loadWorkspaces = useCallback(async () => {
     try {
-      const res = await adamApiFetch(`${API}/api/workspaces`, token);
+      const res = await adamApiFetch(`${apiBase}/api/workspaces`, token);
       const data = await res.json();
       if (data.success && Array.isArray(data.workspaces)) {
         setWorkspaces(data.workspaces);
@@ -116,7 +116,7 @@ export default function WorkspaceSelector({
     setCreating(true);
     setCreateError('');
     try {
-      const res = await adamApiFetch(`${API}/api/workspaces`, token, {
+      const res = await adamApiFetch(`${apiBase}/api/workspaces`, token, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -24,6 +24,7 @@ import {
   type AidilStageDashboard,
   type ConstitutionalCheckpoint,
 } from '@/lib/adam/adam-brain-stages';
+import { useAdamStack } from '@/lib/adam/adam-stack-context';
 
 interface Props {
   token: string;
@@ -186,6 +187,7 @@ function CheckpointSeal({ cp }: { cp: ConstitutionalCheckpoint }) {
 }
 
 export default function AIDILStageDashboard({ token, refreshKey = 0 }: Props) {
+  const { apiBase } = useAdamStack();
   const [dashboard, setDashboard] = useState<AidilStageDashboard | null>(null);
   const [checkpoints, setCheckpoints] = useState<ConstitutionalCheckpoint[]>([]);
   const [loading, setLoading] = useState(true);
@@ -195,7 +197,7 @@ export default function AIDILStageDashboard({ token, refreshKey = 0 }: Props) {
     setLoading(true);
     setError('');
     try {
-      const data = await fetchAidilStageDashboard(token);
+      const data = await fetchAidilStageDashboard(apiBase, token);
       setDashboard(data.dashboard);
       setCheckpoints(data.checkpoints);
     } catch (err) {
@@ -205,7 +207,7 @@ export default function AIDILStageDashboard({ token, refreshKey = 0 }: Props) {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [token, apiBase]);
 
   useEffect(() => {
     void load();

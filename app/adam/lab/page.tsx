@@ -2,11 +2,11 @@
  * ============================================================
  * QIUBBX MANAGEMENT SYSTEM
  * ============================================================
- * Module      : ADAM Session Sleep Beacon
+ * Module      : ADAM Lab Console (Qwen pilot)
  * Platform    : Web (Next.js)
  * QXK24       : Kernel v1.7.0
  * Founder     : Masa Bayu
- * Created     : 2026-05-29
+ * Created     : 2026-05-28
  * ============================================================
  * CONSTITUTIONAL DECLARATION:
  * This module operates under the Alamtologi Constitutional
@@ -15,18 +15,15 @@
  * ============================================================
  */
 
-export function sendAdamSleepBeacon(apiBase: string, token: string, sessionId: string): void {
-  if (!token || !sessionId) return;
+'use client';
 
-  void fetch(`${apiBase}/api/adam/auth/session/sleep`, {
-    method:  'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization:  `Bearer ${token}`,
-    },
-    body:    JSON.stringify({ sessionId }),
-    keepalive: true,
-  }).catch(() => {});
+import { AdamStackProvider } from '@/lib/adam/adam-stack-context';
+import ADAMPageShell from '@/components/adam/ADAMPageShell';
+
+export default function ADAMLabPage() {
+  return (
+    <AdamStackProvider stackId="lab">
+      <ADAMPageShell />
+    </AdamStackProvider>
+  );
 }
-
-export const ADAM_SLEEP_MS = 30 * 60 * 1000;
