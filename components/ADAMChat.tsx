@@ -37,6 +37,7 @@ interface Message {
   attachments?: string[];
   speakerName?: string;
   isFounderRelay?: boolean;
+  isStudentRelay?: boolean;
 }
 
 interface ConsultItem {
@@ -87,6 +88,7 @@ function mapHistoryMessage(m: {
   k24Address?: string | null;
   speakerName?: string | null;
   isFounderRelay?: boolean | null;
+  isStudentRelay?: boolean | null;
 }): Message {
   let content = m.content ?? '';
   if (m.role === 'founder') {
@@ -101,6 +103,7 @@ function mapHistoryMessage(m: {
     k24Address: m.k24Address ?? undefined,
     speakerName: m.speakerName ?? undefined,
     isFounderRelay: m.isFounderRelay ?? false,
+    isStudentRelay: m.isStudentRelay ?? false,
   };
 }
 

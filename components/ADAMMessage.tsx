@@ -22,6 +22,7 @@ interface Props {
   content: string;
   speakerName?: string;
   isFounderRelay?: boolean;
+  isStudentRelay?: boolean;
   judgment?: string;
   k24Address?: string;
   timestamp: Date;
@@ -52,6 +53,7 @@ export default function ADAMMessage({
   role,
   speakerName,
   isFounderRelay,
+  isStudentRelay,
   content,
   judgment,
   k24Address,
@@ -61,7 +63,9 @@ export default function ADAMMessage({
   actionsDisabled,
 }: Props) {
   const isAdam = role === 'adam';
-  const isRelay = Boolean(isFounderRelay);
+  const isFounderViaAdam = Boolean(isFounderRelay);
+  const isStudentViaAdam = Boolean(isStudentRelay);
+  const isRelay = isFounderViaAdam || isStudentViaAdam;
 
   return (
     <div style={{
@@ -73,9 +77,9 @@ export default function ADAMMessage({
     }}>
       <div style={{
         maxWidth: 'min(75%, 520px)',
-        background: isRelay ? '#fffbeb' : isAdam ? '#f5f5f5' : '#1a1a1a',
-        color: isRelay ? '#78350f' : isAdam ? '#1a1a1a' : '#ffffff',
-        border: isRelay ? '1px solid #fcd34d' : 'none',
+        background: isFounderViaAdam ? '#fffbeb' : isStudentViaAdam ? '#eff6ff' : isAdam ? '#f5f5f5' : '#1a1a1a',
+        color: isFounderViaAdam ? '#78350f' : isStudentViaAdam ? '#1e3a5f' : isAdam ? '#1a1a1a' : '#ffffff',
+        border: isFounderViaAdam ? '1px solid #fcd34d' : isStudentViaAdam ? '1px solid #93c5fd' : 'none',
         borderRadius: isAdam ? '4px 16px 16px 16px' : '16px 4px 16px 16px',
         padding: '12px 16px',
         wordBreak: 'break-word',
@@ -84,11 +88,17 @@ export default function ADAMMessage({
           <p style={{
             fontSize: 9,
             letterSpacing: '0.2em',
-            color: isRelay ? '#b45309' : '#bbb',
+            color: isFounderViaAdam ? '#b45309' : isStudentViaAdam ? '#2563eb' : '#bbb',
             textTransform: 'uppercase',
             marginBottom: 6,
           }}>
-            {isRelay ? 'Founder via ADAM' : isAdam ? 'ADAM' : speakerName}
+            {isFounderViaAdam
+              ? 'Founder via ADAM'
+              : isStudentViaAdam
+                ? (speakerName ? `Student · ${speakerName}` : 'Student via ADAM')
+                : isAdam
+                  ? 'ADAM'
+                  : speakerName}
           </p>
         )}
         <p style={{
