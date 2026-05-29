@@ -21,7 +21,17 @@ export default function ADAMLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      zIndex: 50,
+      minHeight: '100dvh',
+      width: '100%',
+      margin: 0,
+      padding: 0,
+      background: '#fff',
+      overflow: 'hidden',
+    }}>
       {children}
     </div>
   );

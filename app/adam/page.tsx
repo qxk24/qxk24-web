@@ -8,72 +8,108 @@
  * Founder     : Masa Bayu
  * Created     : 2026-05-28
  * ============================================================
- * CONSTITUTIONAL DECLARATION:
- * This module operates under the Alamtologi Constitutional
- * Framework. All actions are governed by QXK24. Knowledge
- * belongs to no human. It flows like water to all.
- * ============================================================
  */
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import FounderGate from '@/components/FounderGate';
-import ADAMChat    from '@/components/ADAMChat';
-import { verifyFounderToken } from '@/lib/adam-client';
+import { useEffect, useState } from 'react';
+import AdamGate, { type AdamUserProfile } from '@/components/AdamGate';
+import ADAMChat from '@/components/ADAMChat';
+
+const API = process.env.NEXT_PUBLIC_QXK24_API_URL ?? 'https://api.qxk24.com';
+const PROFILE_KEY = 'qxk24_adam_profile';
+const LEGACY_TOKEN_KEY = 'qxk24_adam_token';
+
+function readStoredProfile(): AdamUserProfile | null {
+  const raw = sessionStorage.getItem(PROFILE_KEY);
+  if (!raw) {
+    const legacy = sessionStorage.getItem(LEGACY_TOKEN_KEY);
+    if (legacy) {
+      return { token: legacy, role: 'founder', userId: 'masa-bayu', userName: 'Masa Bayu' };
+    }
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (typeof parsed === 'string' && parsed.length > 0) {
+      return { token: parsed, role: 'founder', userId: 'masa-bayu', userName: 'Masa Bayu' };
+    }
+    if (parsed && typeof parsed === 'object' && 'token' in parsed) {
+      const p = parsed as AdamUserProfile;
+      if (typeof p.token === 'string' && p.token.length > 0) return p;
+    }
+  } catch {
+    sessionStorage.removeItem(PROFILE_KEY);
+  }
+  return null;
+}
 
 export default function ADAMPage() {
-  const [token,           setToken]           = useState<string | null>(null);
-  const [checkingSession, setCheckingSession] = useState(true);
+  const [profile, setProfile] = useState<AdamUserProfile | null>(null);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem('qxk24_session_token');
-    if (stored) {
-      verifyFounderToken(stored).then((valid) => {
-        if (valid) {
-          setToken(stored);
-        } else {
-          sessionStorage.removeItem('qxk24_session_token');
-        }
-        setCheckingSession(false);
-      });
-    } else {
-      setCheckingSession(false);
+    const stored = readStoredProfile();
+    if (!stored?.token) {
+      setChecking(false);
+      return;
     }
+
+    fetch(`${API}/api/adam/auth/verify`, {
+      headers: { Authorization: `Bearer ${stored.token}` },
+      method: 'POST',
+    })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success && d.valid) {
+          const next: AdamUserProfile = {
+            token:    stored.token,
+            role:     d.role === 'student' ? 'student' : 'founder',
+            userId:   d.userId ?? stored.userId ?? 'masa-bayu',
+            userName: d.name ?? stored.userName ?? 'Masa Bayu',
+          };
+          sessionStorage.setItem(PROFILE_KEY, JSON.stringify(next));
+          sessionStorage.removeItem(LEGACY_TOKEN_KEY);
+          setProfile(next);
+        } else {
+          sessionStorage.removeItem(PROFILE_KEY);
+          sessionStorage.removeItem(LEGACY_TOKEN_KEY);
+        }
+      })
+      .catch(() => {
+        sessionStorage.removeItem(PROFILE_KEY);
+        sessionStorage.removeItem(LEGACY_TOKEN_KEY);
+      })
+      .finally(() => setChecking(false));
   }, []);
 
-  function handleAuthenticated(newToken: string) {
-    setToken(newToken);
+  function handleAuth(p: AdamUserProfile) {
+    sessionStorage.setItem(PROFILE_KEY, JSON.stringify(p));
+    setProfile(p);
   }
 
   function handleSignOut() {
-    sessionStorage.removeItem('qxk24_session_token');
-    setToken(null);
+    sessionStorage.removeItem(PROFILE_KEY);
+    setProfile(null);
   }
 
-  if (checkingSession) {
+  if (checking) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-gray-300 text-xs tracking-widest">
-          Initializing...
-        </div>
+      <div style={{
+        minHeight: '100dvh',
+        background: '#fafafa',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
+        <p style={{ color: '#bbb', fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+          Loading...
+        </p>
       </div>
     );
   }
 
-  if (!token) {
-    return <FounderGate onAuthenticated={handleAuthenticated} />;
-  }
-
-  return (
-    <div className="relative min-h-screen bg-white text-gray-900">
-      <button
-        onClick={handleSignOut}
-        className="fixed top-4 right-4 z-50 text-gray-400 hover:text-gray-600 text-xs tracking-widest uppercase transition-colors"
-      >
-        Exit
-      </button>
-      <ADAMChat founderKey={token} />
-    </div>
-  );
+  if (!profile?.token) return <AdamGate onAuthenticated={handleAuth} />;
+  return <ADAMChat profile={profile} onSignOut={handleSignOut} />;
 }

@@ -17,80 +17,154 @@
 
 'use client';
 
-import type { ADAMMessage, ADAMJudgment } from '@/lib/adam-client';
-
-interface ADAMMessageProps {
-  message: ADAMMessage;
+interface Props {
+  role: 'founder' | 'student' | 'adam';
+  content: string;
+  speakerName?: string;
+  isFounderRelay?: boolean;
+  judgment?: string;
+  k24Address?: string;
+  timestamp: Date;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  actionsDisabled?: boolean;
 }
 
-function JudgmentBadge({ judgment }: { judgment: ADAMJudgment }) {
-  const config = {
-    MAKMUR: { bg: 'bg-emerald-50',  text: 'text-emerald-600', border: 'border-emerald-200' },
-    ISLAH:  { bg: 'bg-amber-50',    text: 'text-amber-600',   border: 'border-amber-200'   },
-    WAQF:   { bg: 'bg-red-50',      text: 'text-red-600',     border: 'border-red-200'     },
-  }[judgment];
-
-  return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs border ${config.bg} ${config.border} ${config.text}`}>
-      {judgment}
-    </span>
-  );
-}
-
-function cleanContent(content: string): string {
-  return content
+function clean(text: string): string {
+  if (!text) return '';
+  return text
     .replace(/<adam_judgment>[\s\S]*?<\/adam_judgment>/g, '')
-    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/═══ FOUNDER TEACHING DATA[\s\S]*?═══ END FOUNDER TEACHING DATA ═══/g, '')
     .replace(/\*\*(.*?)\*\*/g, '$1')
-    .replace(/\*(.*?)\*/g, '$1')
-    .replace(/^[-*]\s+/gm, '')
-    .replace(/^\|.*\|$/gm, '')
-    .replace(/^[-|]+$/gm, '')
-    .replace(/^---+$/gm, '')
-    .replace(/\n{3,}/g, '\n\n')
+    .replace(/#{1,6}\s/g, '')
+    .replace(/^\s*[-•]\s/gm, '')
+    .replace(/^---\s*$/gm, '')
     .trim();
 }
 
-export default function ADAMMessageComponent({ message }: ADAMMessageProps) {
-  const isFounder = message.role === 'founder';
-  const content   = cleanContent(message.content);
+const judgmentColor: Record<string, string> = {
+  MAKMUR: '#27ae60',
+  ISLAH: '#e67e22',
+  WAQF: '#c0392b',
+};
 
-  const time = new Date(message.timestamp).toLocaleTimeString('en-GB', {
-    hour: '2-digit', minute: '2-digit',
-  });
-
-  if (isFounder) {
-    return (
-      <div className="flex justify-end mb-6">
-        <div className="max-w-[70%]">
-          <div className="bg-gray-900 text-white rounded-2xl rounded-tr-sm px-5 py-3.5">
-            <p className="text-sm leading-relaxed">{content}</p>
-          </div>
-          <p className="text-gray-300 text-xs mt-1 text-right">{time}</p>
-        </div>
-      </div>
-    );
-  }
+export default function ADAMMessage({
+  role,
+  speakerName,
+  isFounderRelay,
+  content,
+  judgment,
+  k24Address,
+  timestamp,
+  onEdit,
+  onDelete,
+  actionsDisabled,
+}: Props) {
+  const isAdam = role === 'adam';
+  const isRelay = Boolean(isFounderRelay);
 
   return (
-    <div className="flex justify-start mb-6">
-      <div className="max-w-[75%]">
-        <div className="flex items-center gap-2 mb-1.5">
-          <div className="w-6 h-6 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center">
-            <span className="text-xs text-gray-500">A</span>
-          </div>
-          <span className="text-gray-400 text-xs tracking-widest">ADAM</span>
-          {message.k24Address && (
-            <span className="text-gray-300 text-xs">{message.k24Address}</span>
-          )}
-          {message.judgment && (
-            <JudgmentBadge judgment={message.judgment} />
-          )}
-        </div>
-        <div className="bg-gray-50 border border-gray-100 rounded-2xl rounded-tl-sm px-5 py-4">
-          <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap">{content}</p>
-        </div>
-        <p className="text-gray-300 text-xs mt-1 ml-1">{time}</p>
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: isAdam ? 'flex-start' : 'flex-end',
+      marginBottom: 20,
+      width: '100%',
+    }}>
+      <div style={{
+        maxWidth: 'min(75%, 520px)',
+        background: isRelay ? '#fffbeb' : isAdam ? '#f5f5f5' : '#1a1a1a',
+        color: isRelay ? '#78350f' : isAdam ? '#1a1a1a' : '#ffffff',
+        border: isRelay ? '1px solid #fcd34d' : 'none',
+        borderRadius: isAdam ? '4px 16px 16px 16px' : '16px 4px 16px 16px',
+        padding: '12px 16px',
+        wordBreak: 'break-word',
+      }}>
+        {(isAdam || (role === 'student' && speakerName)) && (
+          <p style={{
+            fontSize: 9,
+            letterSpacing: '0.2em',
+            color: isRelay ? '#b45309' : '#bbb',
+            textTransform: 'uppercase',
+            marginBottom: 6,
+          }}>
+            {isRelay ? 'Founder via ADAM' : isAdam ? 'ADAM' : speakerName}
+          </p>
+        )}
+        <p style={{
+          fontSize: 'clamp(13px, 3.5vw, 15px)',
+          lineHeight: 1.8,
+          whiteSpace: 'pre-wrap',
+          margin: 0,
+        }}>
+          {clean(content)}
+        </p>
+      </div>
+
+      <div style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 8,
+        alignItems: 'center',
+        marginTop: 5,
+        paddingLeft: isAdam ? 4 : 0,
+        paddingRight: isAdam ? 0 : 4,
+      }}>
+        {isAdam && judgment && (
+          <span style={{
+            fontSize: 10,
+            letterSpacing: '0.1em',
+            color: judgmentColor[judgment] ?? '#888',
+            textTransform: 'uppercase',
+            fontWeight: 500,
+          }}>
+            {judgment}
+          </span>
+        )}
+        {isAdam && k24Address && (
+          <span style={{ fontSize: 10, color: '#bbb', letterSpacing: '0.1em' }}>
+            {k24Address}
+          </span>
+        )}
+        <span style={{ fontSize: 10, color: '#ccc' }}>
+          {new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        </span>
+        {role === 'founder' && onEdit && onDelete && (
+          <span style={{ display: 'flex', gap: 6, marginLeft: 4 }}>
+            <button
+              type="button"
+              onClick={onEdit}
+              disabled={actionsDisabled}
+              style={{
+                fontSize: 10,
+                color: actionsDisabled ? '#ddd' : '#888',
+                background: 'none',
+                border: 'none',
+                cursor: actionsDisabled ? 'not-allowed' : 'pointer',
+                padding: 0,
+                textDecoration: 'underline',
+              }}
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              onClick={onDelete}
+              disabled={actionsDisabled}
+              style={{
+                fontSize: 10,
+                color: actionsDisabled ? '#ddd' : '#c0392b',
+                background: 'none',
+                border: 'none',
+                cursor: actionsDisabled ? 'not-allowed' : 'pointer',
+                padding: 0,
+                textDecoration: 'underline',
+              }}
+            >
+              Delete
+            </button>
+          </span>
+        )}
       </div>
     </div>
   );

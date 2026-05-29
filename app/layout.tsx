@@ -11,7 +11,7 @@
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import '../styles/globals.css';
+import './globals.css';
 
 export const metadata: Metadata = {
   title: 'QXK24 — Alamtologi Journals',
@@ -21,29 +21,33 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>
-        <nav className="border-b border-gray-100 sticky top-0 bg-white z-50">
-          <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
+      <body className="antialiased">
+        <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-sm">
+          <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-5 py-4 sm:px-8">
             <Link
               href="/"
-              className="font-bold text-gray-900 hover:text-amber-500 transition-colors text-lg tracking-tight"
+              className="text-lg font-bold tracking-tight text-gray-900 transition-colors hover:text-amber-600"
             >
               QXK24
             </Link>
 
-            <div className="flex items-center gap-6 text-sm text-gray-500">
-              <Link href="/journals" className="hover:text-gray-900 transition-colors">
+            <nav className="flex flex-wrap items-center justify-end gap-x-5 gap-y-2 text-sm text-gray-500">
+              <Link href="/journals" className="transition-colors hover:text-gray-900">
                 Journals
               </Link>
-              <Link href="/journals/submit" className="hover:text-gray-900 transition-colors">
+              <Link href="/journals/submit" className="transition-colors hover:text-gray-900">
                 Submit
               </Link>
-              <Link href="/leaderboard" className="hover:text-gray-900 transition-colors">
+              <Link href="/leaderboard" className="transition-colors hover:text-gray-900">
                 Leaderboard
               </Link>
-            </div>
+              <Link href="/adam" className="font-medium text-amber-600 transition-colors hover:text-amber-700">
+                ADAM
+              </Link>
+            </nav>
           </div>
-        </nav>
+        </header>
+
         {children}
       </body>
     </html>

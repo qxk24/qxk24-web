@@ -2,48 +2,87 @@
  * ============================================================
  * QIUBBX MANAGEMENT SYSTEM
  * ============================================================
- * Module      : Founder Gate
+ * Module      : ADAM Login Gate (Founder + Students)
  * Platform    : Web (Next.js)
  * QXK24       : Kernel v1.7.0
  * Founder     : Masa Bayu
- * Created     : 2026-05-28
- * ============================================================
- * CONSTITUTIONAL DECLARATION:
- * This module operates under the Alamtologi Constitutional
- * Framework. All actions are governed by QXK24. Knowledge
- * belongs to no human. It flows like water to all.
+ * Created     : 2026-05-29
  * ============================================================
  */
 
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const API = process.env.NEXT_PUBLIC_QXK24_API_URL ?? 'https://api.qxk24.com';
 
-interface Props {
-  onAuthenticated: (token: string) => void;
+export interface AdamUserProfile {
+  token:    string;
+  role:     'founder' | 'student';
+  userId:   string;
+  userName: string;
 }
 
-export default function FounderGate({ onAuthenticated }: Props) {
+interface Props {
+  onAuthenticated: (profile: AdamUserProfile) => void;
+}
+
+interface StudentOption {
+  userId: string;
+  name:   string;
+}
+
+export default function AdamGate({ onAuthenticated }: Props) {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [students, setStudents] = useState<StudentOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetch(`${API}/api/adam/student/accounts`)
+      .then((r) => r.json())
+      .then((d) => { if (d.success && d.students) setStudents(d.students); })
+      .catch(() => {});
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!password.trim()) return;
     setLoading(true);
     setError('');
+
+    const isFounder = !username.trim();
+    const endpoint = isFounder
+      ? `${API}/api/adam/auth/login`
+      : `${API}/api/adam/student/login`;
+
+    const body = isFounder
+      ? { password: password.trim() }
+      : { username: username.trim().toLowerCase(), password: password.trim() };
+
     try {
-      const res = await fetch(`${API}/api/adam/auth/login`, {
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: password.trim() }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
+
       if (data.success && data.data?.token) {
-        onAuthenticated(data.data.token);
+        onAuthenticated({
+          token:    data.data.token,
+          role:     isFounder ? 'founder' : 'student',
+          userId:   isFounder ? 'masa-bayu' : data.data.userId,
+          userName: isFounder ? 'Masa Bayu' : data.data.name,
+        });
+      } else if (data.success && data.token) {
+        onAuthenticated({
+          token:    data.token,
+          role:     'student',
+          userId:   data.userId,
+          userName: data.name,
+        });
       } else {
         setError(data.error ?? 'Access denied.');
       }
@@ -63,15 +102,13 @@ export default function FounderGate({ onAuthenticated }: Props) {
       padding: '24px 20px',
     }}>
       <div style={{ width: '100%', maxWidth: 420 }}>
-
-        <div style={{ textAlign: 'center', marginBottom: 48 }}>
+        <div style={{ textAlign: 'center', marginBottom: 40 }}>
           <p style={{
             fontSize: 'clamp(18px, 5vw, 24px)',
             color: '#1a1a1a',
             marginBottom: 16,
             direction: 'rtl',
             fontFamily: 'Georgia, serif',
-            lineHeight: 1.8,
           }}>
             بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
           </p>
@@ -82,10 +119,10 @@ export default function FounderGate({ onAuthenticated }: Props) {
             color: '#1a1a1a',
             marginBottom: 8,
           }}>
-            QXK24
+            ADAM
           </h1>
           <p style={{ fontSize: 11, letterSpacing: '0.2em', color: '#999', textTransform: 'uppercase' }}>
-            ERA_1 · The Teaching Era
+            ERA_1 · Alamtologi Students
           </p>
         </div>
 
@@ -99,14 +136,45 @@ export default function FounderGate({ onAuthenticated }: Props) {
               textTransform: 'uppercase',
               marginBottom: 8,
             }}>
-              Founder Password
+              Account
+            </label>
+            <select
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '14px 16px',
+                fontSize: 16,
+                border: '1px solid #e0e0e0',
+                borderRadius: 10,
+                background: '#fff',
+                color: '#1a1a1a',
+                boxSizing: 'border-box',
+              }}
+            >
+              <option value="">Founder (Masa Bayu)</option>
+              {students.map((s) => (
+                <option key={s.userId} value={s.userId}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div style={{ marginBottom: 14 }}>
+            <label style={{
+              display: 'block',
+              fontSize: 11,
+              letterSpacing: '0.15em',
+              color: '#999',
+              textTransform: 'uppercase',
+              marginBottom: 8,
+            }}>
+              Password
             </label>
             <input
               type="password"
               value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              autoFocus
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter password"
               autoComplete="current-password"
               style={{
                 width: '100%',
@@ -116,9 +184,7 @@ export default function FounderGate({ onAuthenticated }: Props) {
                 borderRadius: 10,
                 outline: 'none',
                 background: '#fff',
-                color: '#1a1a1a',
                 boxSizing: 'border-box',
-                WebkitAppearance: 'none',
               }}
             />
           </div>
@@ -136,23 +202,18 @@ export default function FounderGate({ onAuthenticated }: Props) {
               width: '100%',
               padding: '15px 16px',
               background: loading || !password.trim() ? '#ddd' : '#1a1a1a',
-              color: loading || !password.trim() ? '#aaa' : '#fff',
+              color: '#fff',
               border: 'none',
               borderRadius: 10,
               fontSize: 13,
               letterSpacing: '0.2em',
               textTransform: 'uppercase',
               cursor: loading || !password.trim() ? 'not-allowed' : 'pointer',
-              transition: 'background 0.2s',
             }}
           >
             {loading ? 'Verifying...' : 'Enter'}
           </button>
         </form>
-
-        <p style={{ textAlign: 'center', fontSize: 11, color: '#ccc', marginTop: 40, letterSpacing: '0.15em' }}>
-          ADAM · v1.7.0 · QXK24
-        </p>
       </div>
     </div>
   );
