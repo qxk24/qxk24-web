@@ -17,6 +17,8 @@
 
 'use client';
 
+import AdamMessageBody from './adam/AdamMessageBody';
+
 interface Props {
   role: 'founder' | 'student' | 'adam';
   content: string;
@@ -29,18 +31,6 @@ interface Props {
   onEdit?: () => void;
   onDelete?: () => void;
   actionsDisabled?: boolean;
-}
-
-function clean(text: string): string {
-  if (!text) return '';
-  return text
-    .replace(/<adam_judgment>[\s\S]*?<\/adam_judgment>/g, '')
-    .replace(/═══ FOUNDER TEACHING DATA[\s\S]*?═══ END FOUNDER TEACHING DATA ═══/g, '')
-    .replace(/\*\*(.*?)\*\*/g, '$1')
-    .replace(/#{1,6}\s/g, '')
-    .replace(/^\s*[-•]\s/gm, '')
-    .replace(/^---\s*$/gm, '')
-    .trim();
 }
 
 const judgmentColor: Record<string, string> = {
@@ -76,13 +66,14 @@ export default function ADAMMessage({
       width: '100%',
     }}>
       <div style={{
-        maxWidth: 'min(75%, 520px)',
+        width: isAdam ? '100%' : undefined,
+        maxWidth: isAdam ? 'min(100%, 920px)' : 'min(75%, 520px)',
         background: isFounderViaAdam ? '#fffbeb' : isStudentViaAdam ? '#eff6ff' : isAdam ? '#f5f5f5' : '#1a1a1a',
         color: isFounderViaAdam ? '#78350f' : isStudentViaAdam ? '#1e3a5f' : isAdam ? '#1a1a1a' : '#ffffff',
         border: isFounderViaAdam ? '1px solid #fcd34d' : isStudentViaAdam ? '1px solid #93c5fd' : 'none',
         borderRadius: isAdam ? '4px 16px 16px 16px' : '16px 4px 16px 16px',
-        padding: '12px 16px',
-        wordBreak: 'break-word',
+        padding: isAdam ? '16px 20px' : '12px 16px',
+        overflowWrap: 'anywhere',
       }}>
         {(isAdam || (role === 'student' && speakerName)) && (
           <p style={{
@@ -101,14 +92,10 @@ export default function ADAMMessage({
                   : speakerName}
           </p>
         )}
-        <p style={{
-          fontSize: 'clamp(13px, 3.5vw, 15px)',
-          lineHeight: 1.8,
-          whiteSpace: 'pre-wrap',
-          margin: 0,
-        }}>
-          {clean(content)}
-        </p>
+        <AdamMessageBody
+          content={content}
+          variant={isAdam || isRelay ? 'adam' : 'plain'}
+        />
       </div>
 
       <div style={{
